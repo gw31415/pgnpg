@@ -1,0 +1,9 @@
+[package]
+name = "migration"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+entity = { path = "../entity" ***REMOVED***
+sea-orm-migration = "0.12.15"

@@ -1,0 +1,15 @@
+workspace = { members = ["entity", "migration", ".", "api"] ***REMOVED***
+
+[package]
+name = "pgnpg"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+api = { path = "./api" ***REMOVED***
+entity = { path = "./entity" ***REMOVED***
+migration = { path = "./migration" ***REMOVED***
+
+sea-orm = { version = "0.12.15", features = ["sqlx-sqlite", "runtime-tokio-rustls", "macros"] ***REMOVED***
+time = "=0.3.34"
+tokio = { version = "1.37.0", features = ["full"] ***REMOVED***
