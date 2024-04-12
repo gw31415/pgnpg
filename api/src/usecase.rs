@@ -106,14 +106,14 @@ pub async fn fetch(start: NaiveDate, end: NaiveDate) -> Result<Vec<Record>, Erro
 ***REMOVED***
 ***REMOVED***
 ***REMOVED***
-            updated_at: now,
+***REMOVED***
     ***REMOVED***
     ***REMOVED***
 
 ***REMOVED***
 ***REMOVED***
 ***REMOVED***
-        created_at: get_last_updated_at(db).await?.unwrap(),
+***REMOVED***
 ***REMOVED***
 ***REMOVED***))
 ***REMOVED***

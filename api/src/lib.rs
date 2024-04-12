@@ -3,7 +3,6 @@ mod usecase;
 use std::collections::HashSet;
 
 use axum::{extract::Path, http::StatusCode, response::IntoResponse, routing::get, Router***REMOVED***
-use axum_extra::routing::RouterExt;
 use reqwest::header;
 use sea_orm::DatabaseConnection;
 use serde::Serialize;
@@ -87,7 +86,7 @@ pub async fn run_server(db: DatabaseConnection) {
     let app = Router::new()
         .fallback(|| async { NOT_FOUND ***REMOVED***)
         .route("/", get(|| async { "OK" ***REMOVED***))
-        .route_with_tsr(
+        .route(
             "/active_users/",
             get({
                 let db = db.clone();
@@ -101,7 +100,7 @@ pub async fn run_server(db: DatabaseConnection) {
             ***REMOVED***
         ***REMOVED***),
     ***REMOVED***
-        .route_with_tsr(
+        .route(
             "/profile/:pgrit_id/",
             get({
                 let db = db.clone();
@@ -118,7 +117,7 @@ pub async fn run_server(db: DatabaseConnection) {
             ***REMOVED***
         ***REMOVED***),
     ***REMOVED***
-        .route_with_tsr(
+        .route(
             "/refresh/",
             get({
                 let db = db.clone();

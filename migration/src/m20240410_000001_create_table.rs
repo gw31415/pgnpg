@@ -18,7 +18,12 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .primary_key(),
                 ***REMOVED***
-                    .col(ColumnDef::new(user::Column::PgritId).unique_key().string().not_null())
+                    .col(
+                        ColumnDef::new(user::Column::PgritId)
+                            .unique_key()
+                            .string()
+                            .not_null(),
+                ***REMOVED***
 ***REMOVED***
         ***REMOVED***
     ***REMOVED***?;
