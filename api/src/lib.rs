@@ -68,7 +68,7 @@ async fn refresh(db: &DatabaseConnection) {
             .collect::<HashSet<_>>()
             != active_users_post
         {
-            records = usecase::fetch(start, end - chrono::Duration::days(DAYS_COUNT - 1))
+            records = usecase::fetch(end - chrono::Duration::days(DAYS_COUNT - 1), end)
         ***REMOVED***
             ***REMOVED***
     ***REMOVED***
