@@ -15,7 +15,7 @@ pub struct UserProfile {
     /// ユーザ情報
     pub user: User,
 
-    /// 生徒情報
+    /// 学生情報
     pub student: Option<Student>,
 
     /// 作成日時
