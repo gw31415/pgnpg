@@ -1,0 +1,201 @@
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>PGN Profile</title>
+<meta name="description" content="PGNを簡易表示" />
+<meta name="keywords" content="PGN,PIX" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<meta name="format-detection" content="telephone=no,email=no,address=no" />
+<link rel="icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="icon.png" />
+<link rel="stylesheet" href="https://unpkg.com/modern-css-reset/dist/reset.min.css" />
+<link rel="canonical" href="" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jersey+10+Charted&family=Orbitron&display=swap" rel="stylesheet">
+
+<!-- OGP -->
+<meta property="og:url" content="https://pgn.amas.dev" />
+<!--<meta property="og:type" content="" />-->
+<meta property="og:title" content="PGN Profile" />
+<meta property="og:description" content="PGNを簡易表示" />
+<meta property="og:site_name" content="pgn.amas.dev" />
+<!-- <meta property="og:image" content="" /> -->
+<meta property="og:locale" content="ja_JP" />
+
+<!-- OGP Facebook -->
+<!--<meta property="fb:app_id" content="" />-->
+
+<!-- OGP Twitter -->
+<!--<meta name="twitter:card" content="" />-->
+<!--<meta name="twitter:site" content="" />-->
+<!--<meta name="twitter:creator" content="" />-->
+<!--<meta name="twitter:title" content="{{ title ***REMOVED******REMOVED***" />-->
+<!--<meta name="twitter:description" content="" />-->
+<!--<meta name="twitter:image" content="" />-->
+
+<script is:inline src="https://cdn.jsdelivr.net/npm/js-circle-progress/dist/circle-progress.min.js" type="module"></script>
+<style lang="scss">
+	html,
+	body,
+	main {
+		width: 100%;
+		height: 100%;
+		font-family: sans-serif;
+	***REMOVED***
+
+	circle-progress::part(base) {
+		height: 50vmin;
+		width: 50vmin;
+	***REMOVED***
+	circle-progress::part(value) {
+		stroke-width: 3px;
+		stroke: white;
+		stroke-linecap: round;
+	***REMOVED***
+	circle-progress::part(circle) {
+		stroke-width: 6px;
+		stroke: #888;
+	***REMOVED***
+	circle-progress::part(text) {
+		fill: #888;
+		font-family: 'Orbitron', sans-serif;
+	***REMOVED***
+
+	.rainbow {
+		background: linear-gradient(to-right, #FF0000, #FF7F00, #FFFF00, #00FF00, #0000FF, #4B0082, #8B00FF);
+		background: -webkit-linear-gradient(left, #FF0000, #FF7F00, #FFFF00, #00FF00, #0000FF, #4B0082, #8B00FF);
+		background: -o-linear-gradient(right, #FF0000, #FF7F00, #FFFF00, #00FF00, #0000FF, #4B0082, #8B00FF);
+		background: -moz-linear-gradient(right, #FF0000, #FF7F00, #FFFF00, #00FF00, #0000FF, #4B0082, #8B00FF);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		text-fill-color: transparent;
+	***REMOVED***
+
+	.typing {
+		max-width: 100%;
+		width: 0;
+		animation: blink .5s step-end infinite alternate;
+		white-space: nowrap;
+		overflow: scroll;
+		border-right: 2px solid;
+		font-family: monospace;
+	***REMOVED***
+
+	@keyframes typing {
+		from {
+			width: 0
+		***REMOVED***
+	***REMOVED***
+
+	@keyframes blink {
+		50% {
+			border-color: transparent
+		***REMOVED***
+	***REMOVED***
+
+	@-webkit-keyframes svg {
+		0% {
+			stroke-dashoffset: 2000;
+			fill: transparent;
+		***REMOVED***
+
+		40% {
+			stroke-dashoffset: 2000;
+			fill: transparent;
+		***REMOVED***
+
+		50% {
+			fill: transparent;
+		***REMOVED***
+
+		100% {
+			stroke-dashoffset: 0;
+			fill: #888;
+		***REMOVED***
+	***REMOVED***
+
+	main {
+		padding: 1rem;
+		display: flex;
+		flex-direction: column;
+	***REMOVED***
+</style>
+
+<body>
+	<main>
+		<div style="display:flex;justify-content:space-between">
+			<div id="title" class="typing" style="font-size: 2rem">@</div>
+			<div id="updatedat" style="text-align:right"></div>
+		</div>
+		<div style="flex:1;display:grid;place-items: center;grid-template-rows:1fr 2fr">
+			<div>
+				<div id="level" style="opacity:0;transition:opacity 1s;font-size:calc(20vh - 50px);font-family:'Jersey 10 Charted'"></div>
+			</div>
+			<div><circle-progress text-format="vertical"></circle-progress></div>
+		</div>
+	</main>
+</body>
+</html>
+
+<script>
+import type UserProfile from "../types";
+const data: UserProfile = await fetch("data.json").then((res) => res.json());
+function start() {
+	document.getElementById("title")!.textContent = '@' + data.user.pgrit_id;
+	document.getElementById("updatedat")!.textContent = `Updated at ${new Date(data.pgn.updated_at).toLocaleString()***REMOVED***`;
+
+	document.querySelectorAll(".typing").forEach((e) => {
+		const el = e as HTMLElement;
+		const len = `${el.textContent***REMOVED***`.length + 1;
+		el.style.animation = `typing ${Math.min(1, 0.1 * len)***REMOVED***s steps(${len***REMOVED***), blink .4s step-end infinite alternate`;
+		el.style.width = `${len***REMOVED***ch`;
+		el.addEventListener("animationend", () => {
+			el.style.animation = "none";
+			el.style.borderRight = "none";
+		***REMOVED***);
+	***REMOVED***);
+
+	const circle = document.getElementsByTagName("circle-progress")[0]! as any;
+	if (data.pgn.level === "GrandMaster") {
+		circle.setAttribute("value","100");
+		circle.setAttribute("max","100");
+		circle.setAttribute("text-format", "percent");
+	***REMOVED***else {
+		circle.setAttribute("value", `${data.pgn.on_level***REMOVED***`);
+		circle.setAttribute("max", `${data.pgn.level_length***REMOVED***`);
+	***REMOVED***
+
+	const level = document.getElementById("level")!;
+	switch (data.pgn.level) {
+		case "Iron":
+			level.style.color = '#33363B';
+			break;
+		case "Bronze":
+			level.style.color = '#CD7F32';
+			break;
+		case "Silver":
+			level.style.color = '#6e6e6e';
+			break;
+		case "Gold":
+			level.style.color = '#FFD700';
+			break;
+		case "Platinum":
+			level.style.color = 'black';
+			break;
+		case "Diamond":
+			level.style.color = '#0091b3';
+			break;
+		case "Master":
+			level.style.color = '#6A0DAD';
+			break;
+		case "GrandMaster":
+			level.classList.add('rainbow');
+	***REMOVED***
+	level.style.opacity = "1";
+	level.textContent = `${data.pgn.level***REMOVED***`;
+***REMOVED***
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+</script>

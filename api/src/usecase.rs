@@ -9,7 +9,7 @@
 ***REMOVED***
 ***REMOVED***
 ***REMOVED***
-    user_profile::{PgnSubstract, UserProfile***REMOVED***,
+***REMOVED***
 ***REMOVED***
 ***REMOVED***
 ***REMOVED***
@@ -65,7 +65,7 @@ pub async fn fetch(start: NaiveDate, end: NaiveDate) -> Result<Vec<Record>, Erro
 ***REMOVED***
 ***REMOVED***?;
 
-    let pgn: PgnSubstract = {
+***REMOVED***
 ***REMOVED***
 ***REMOVED***
 ***REMOVED***
@@ -97,7 +97,7 @@ pub async fn fetch(start: NaiveDate, end: NaiveDate) -> Result<Vec<Record>, Erro
 
 ***REMOVED***
         ***REMOVED***
-        PgnSubstract {
+***REMOVED***
 ***REMOVED***
 ***REMOVED***
 ***REMOVED***

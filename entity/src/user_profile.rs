@@ -22,12 +22,12 @@ pub struct UserProfile {
     pub created_at: DateTimeUtc,
 
     /// PGN情報
-    pub pgn: PgnSubstract,
+    pub pgn: PgnInfo,
 ***REMOVED***
 
 #[serde_as]
 #[derive(Debug, Clone, Serialize)]
-pub struct PgnSubstract {
+pub struct PgnInfo {
     /// PIXデータの更新日時
     pub updated_at: DateTimeUtc,
 
