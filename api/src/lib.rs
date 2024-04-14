@@ -146,7 +146,7 @@ pub async fn run_server(RunServerConfig { db, static_dir ***REMOVED***: RunServe
                 .route_service("/", ServeFile::new(static_dir.join("profile/name/index.html")))
                 .route("/data.json", profile)
     ***REMOVED***
-        .nest_service("/", ServeDir::new(static_dir))
+        .nest_service("/", ServeDir::new(static_dir).precompressed_gzip())
         .fallback(NOT_FOUND);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3232").await.unwrap();
