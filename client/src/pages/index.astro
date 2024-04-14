@@ -1,4 +1,4 @@
-<html lang="ja">
+<html lang="ja" class="wf-inactive">
 <head>
 <meta charset="utf-8" />
 <title>PGN Profile</title>
@@ -13,7 +13,6 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jersey+10+Charted&family=Orbitron&display=swap" rel="stylesheet">
 
 <!-- OGP -->
 <meta property="og:url" content="https://pgn.amas.dev" />
@@ -46,8 +45,8 @@
 	***REMOVED***
 
 	circle-progress::part(base) {
-		height: 50vmin;
-		width: 50vmin;
+		height: 60vmin;
+		width: 60vmin;
 	***REMOVED***
 	circle-progress::part(value) {
 		stroke-width: 3px;
@@ -121,42 +120,100 @@
 		padding: 1rem;
 		display: flex;
 		flex-direction: column;
+		transition: opacity .2s;
+	***REMOVED***
+
+	#errmsg {
+		display: none;
+		transition: opacity .2s;
+		font-size: 24px;
+		animation: typing 2.6s steps(26), blink .4s step-end infinite alternate;
+		width: 26ch;
+	***REMOVED***
+
+	.wf-inactive body,
+	body.initializing {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		main {
+			opacity: 0;
+			width: 0;
+			height: 0;
+			overflow: hidden;
+		***REMOVED***
+		#errmsg {
+			display: block;
+		***REMOVED***
+
 	***REMOVED***
 </style>
 
-<body>
+<body class="initializing">
 	<main>
-		<div style="display:flex;justify-content:space-between">
-			<div id="title" class="typing" style="font-size: 2rem">@</div>
+		<div style="display:flex;justify-content:space-between;align-items:center">
+			<div id="title" class="typing" style="font-size:2rem">@</div>
 			<div id="updatedat" style="text-align:right"></div>
 		</div>
-		<div style="flex:1;display:grid;place-items: center;grid-template-rows:1fr 2fr">
+		<div style="flex:1;display:grid;place-items: center;grid-template-rows:4rem 1fr">
 			<div>
-				<div id="level" style="opacity:0;transition:opacity 1s;font-size:calc(20vh - 50px);font-family:'Jersey 10 Charted'"></div>
+				<div id="level" style="opacity:0;transition:opacity 1s;font-size:3.5rem;font-family:'Jersey 10',monospace"></div>
 			</div>
 			<div><circle-progress text-format="vertical"></circle-progress></div>
 		</div>
 	</main>
-</body>
+	<div class="typing" id="errmsg">Please Enable JavaScript.</div>
+</body>	
 </html>
 
 <script>
 import type UserProfile from "../types";
-const data: UserProfile = await fetch("data.json").then((res) => res.json());
+import WebFont from "webfontloader";
+
+function enableTyping(e: Element) {
+	const el = e as HTMLElement;
+	const len = `${el.textContent***REMOVED***`.length + 1;
+	el.style.animation = `typing ${Math.min(1, 0.1 * len)***REMOVED***s steps(${len***REMOVED***), blink .4s step-end infinite alternate`;
+	el.style.width = `${len***REMOVED***ch`;
+	el.addEventListener("animationend", () => {
+		el.style.animation = "none";
+		el.style.borderRight = "none";
+	***REMOVED***);
+***REMOVED***
+
+document.getElementById("errmsg")!.textContent = "Loading...";
+
+const data: UserProfile = await fetch("data.json").then((res) => {
+	if (!res.ok) {
+		const err = document.getElementById("errmsg")!;
+		err.textContent = "User Not Found.";
+		err.style.display = "block";
+		enableTyping(err);
+		return undefined;
+	***REMOVED***
+	return res.json();
+***REMOVED***);
+
+if (data === undefined) throw new Error("User Not Found.");
+
+WebFont.load({
+	google: {
+		families: ['Jersey 10'],
+		text: "IronBronzeSilverGoldPlatinumDiamondMasterGrandMaster",
+	***REMOVED***
+***REMOVED***);
+WebFont.load({
+	google: {
+		families: ['Orbitron'],
+		text: "0123456789",
+	***REMOVED***
+***REMOVED***);
+
 function start() {
 	document.getElementById("title")!.textContent = '@' + data.user.pgrit_id;
-	document.getElementById("updatedat")!.textContent = `Updated at ${new Date(data.pgn.updated_at).toLocaleString()***REMOVED***`;
+	document.getElementById("updatedat")!.textContent = new Date(data.pgn.updated_at).toLocaleString();
 
-	document.querySelectorAll(".typing").forEach((e) => {
-		const el = e as HTMLElement;
-		const len = `${el.textContent***REMOVED***`.length + 1;
-		el.style.animation = `typing ${Math.min(1, 0.1 * len)***REMOVED***s steps(${len***REMOVED***), blink .4s step-end infinite alternate`;
-		el.style.width = `${len***REMOVED***ch`;
-		el.addEventListener("animationend", () => {
-			el.style.animation = "none";
-			el.style.borderRight = "none";
-		***REMOVED***);
-	***REMOVED***);
+	document.querySelectorAll(".typing").forEach(enableTyping);
 
 	const circle = document.getElementsByTagName("circle-progress")[0]! as any;
 	if (data.pgn.level === "GrandMaster") {
@@ -196,6 +253,8 @@ function start() {
 	***REMOVED***
 	level.style.opacity = "1";
 	level.textContent = `${data.pgn.level***REMOVED***`;
+
+	document.body.classList.remove("initializing");
 ***REMOVED***
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 </script>

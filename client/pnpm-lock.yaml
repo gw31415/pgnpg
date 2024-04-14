@@ -11,6 +11,9 @@ dependencies:
   '@astrojs/solid-js':
     specifier: ^4.1.0
     version: 4.1.0(solid-js@1.8.16)(vite@5.2.8)
+  '@types/webfontloader':
+    specifier: ^1.6.38
+    version: 1.6.38
   astro:
     specifier: ^4.6.1
     version: 4.6.1(sass@1.75.0)(typescript@5.4.5)
@@ -23,6 +26,9 @@ dependencies:
   typescript:
     specifier: ^5.4.5
     version: 5.4.5
+  webfontloader:
+    specifier: ^1.6.28
+    version: 1.6.28
 
 packages:
 
@@ -1059,6 +1065,10 @@ packages:
 
   /@types/unist@3.0.2:
     resolution: {integrity: sha512-dqId9J8K/vGi5Zr7oo212BGii5m3q5Hxlkwy3WpYuKPklmBEvsbMYYyLxAQpSffdLl/gdW0XUpKWFvYmyoWCoQ==***REMOVED***
+    dev: false
+
+  /@types/webfontloader@1.6.38:
+    resolution: {integrity: sha512-kUaF72Fv202suFx6yBrwXqeVRMx7hGtJTesyESZgn9sEPCUeDXm2p0SiyS1MTqW74nQP4p7JyrOCwZ7pNFns4w==***REMOVED***
     dev: false
 
   /@ungap/structured-clone@1.2.0:
@@ -4073,6 +4083,10 @@ packages:
 
   /web-namespaces@2.0.1:
     resolution: {integrity: sha512-bKr1DkiNa2krS7qxNtdrtHAmzuYGFQLiQ13TsorsdT6ULTkPLKuu5+GsFpDlg6JFjUTwX2DyhMPG2be8uPrqsQ==***REMOVED***
+    dev: false
+
+  /webfontloader@1.6.28:
+    resolution: {integrity: sha512-Egb0oFEga6f+nSgasH3E0M405Pzn6y3/9tOVanv/DLfa1YBIgcv90L18YyWnvXkRbIM17v5Kv6IT2N6g1x5tvQ==***REMOVED***
     dev: false
 
   /which-pm-runs@1.1.0:
