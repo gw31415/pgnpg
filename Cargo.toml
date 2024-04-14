@@ -13,3 +13,7 @@ migration = { path = "./migration" ***REMOVED***
 sea-orm = { version = "0.12.15", features = ["sqlx-sqlite", "runtime-tokio-rustls", "macros"] ***REMOVED***
 time = "=0.3.34"
 tokio = { version = "1.37.0", features = ["full"] ***REMOVED***
+serde = "1.0.197"
+
+envy = "0.4.2"
+thiserror = "1.0.58"
