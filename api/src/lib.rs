@@ -143,10 +143,10 @@ pub async fn run_server(RunServerConfig { db, static_dir ***REMOVED***: RunServe
         .nest(
             "/profile/:pgrid_id/",
             Router::new()
-                .route_service("/", ServeFile::new("client/dist/profile/name/index.html"))
+                .route_service("/", ServeFile::new(static_dir.join("profile/name/index.html")))
                 .route("/data.json", profile)
     ***REMOVED***
-        .nest_service("/", ServeDir::new("client/dist"))
+        .nest_service("/", ServeDir::new(static_dir))
         .fallback(NOT_FOUND);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3232").await.unwrap();
