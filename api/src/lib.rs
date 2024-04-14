@@ -6,7 +6,7 @@ use axum::{extract::Path, http::StatusCode, response::IntoResponse, routing::get
 use reqwest::header;
 use sea_orm::DatabaseConnection;
 use serde::Serialize;
-use tower_http::services::{ServeDir, ServeFile***REMOVED***
+use tower_http::{services::{ServeDir, ServeFile***REMOVED***, compression::{CompressionLayer, DefaultPredicate***REMOVED******REMOVED***
 use usecase::profile;
 
 use crate::usecase::get_last_updated_at;
@@ -131,7 +131,15 @@ pub async fn run_server(RunServerConfig { db, static_dir ***REMOVED***: RunServe
 ***REMOVED***);
     let health_check = get("OK");
 
+    let comression_layer: CompressionLayer = CompressionLayer::new()
+        .br(true)
+        .deflate(true)
+        .gzip(true)
+        .zstd(true)
+        .compress_when(DefaultPredicate::new());
+
     let app = Router::new()
+        .layer(comression_layer)
         .nest(
             "/api/",
             Router::new()
@@ -143,10 +151,13 @@ pub async fn run_server(RunServerConfig { db, static_dir ***REMOVED***: RunServe
         .nest(
             "/profile/:pgrid_id/",
             Router::new()
-                .route_service("/", ServeFile::new(static_dir.join("profile/name/index.html")))
-                .route("/data.json", profile)
+                .route_service(
+                    "/",
+                    ServeFile::new(static_dir.join("profile/name/index.html")),
+            ***REMOVED***
+                .route("/data.json", profile),
     ***REMOVED***
-        .nest_service("/", ServeDir::new(static_dir).precompressed_gzip())
+        .nest_service("/", ServeDir::new(static_dir))
         .fallback(NOT_FOUND);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3232").await.unwrap();
