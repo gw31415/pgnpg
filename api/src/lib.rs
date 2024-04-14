@@ -6,7 +6,10 @@ use axum::{extract::Path, http::StatusCode, response::IntoResponse, routing::get
 use reqwest::header;
 use sea_orm::DatabaseConnection;
 use serde::Serialize;
-use tower_http::{services::{ServeDir, ServeFile***REMOVED***, compression::{CompressionLayer, DefaultPredicate***REMOVED******REMOVED***
+use tower_http::{
+    compression::CompressionLayer,
+    services::{ServeDir, ServeFile***REMOVED***,
+***REMOVED***
 use usecase::profile;
 
 use crate::usecase::get_last_updated_at;
@@ -131,15 +134,7 @@ pub async fn run_server(RunServerConfig { db, static_dir ***REMOVED***: RunServe
 ***REMOVED***);
     let health_check = get("OK");
 
-    let comression_layer: CompressionLayer = CompressionLayer::new()
-        .br(true)
-        .deflate(true)
-        .gzip(true)
-        .zstd(true)
-        .compress_when(DefaultPredicate::new());
-
     let app = Router::new()
-        .layer(comression_layer)
         .nest(
             "/api/",
             Router::new()
@@ -157,7 +152,15 @@ pub async fn run_server(RunServerConfig { db, static_dir ***REMOVED***: RunServe
             ***REMOVED***
                 .route("/data.json", profile),
     ***REMOVED***
-        .nest_service("/", ServeDir::new(static_dir))
+        .nest_service(
+            "/",
+            ServeDir::new(static_dir)
+                .precompressed_br()
+                .precompressed_gzip()
+                .precompressed_zstd()
+                .precompressed_deflate(),
+    ***REMOVED***
+        .layer(CompressionLayer::new())
         .fallback(NOT_FOUND);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3232").await.unwrap();
