@@ -6,7 +6,7 @@ use axum::{extract::Path, http::StatusCode, response::IntoResponse, routing::get
 use reqwest::header;
 use sea_orm::DatabaseConnection;
 use serde::Serialize;
-use tower_http::services::ServeDir;
+use tower_http::services::{ServeDir, ServeFile***REMOVED***
 use usecase::profile;
 
 use crate::usecase::get_last_updated_at;
@@ -84,16 +84,11 @@ async fn refresh(db: &DatabaseConnection) {
 
 pub struct RunServerConfig {
     pub db: DatabaseConnection,
-    pub profile_static_dir: PathBuf,
+    pub static_dir: PathBuf,
 ***REMOVED***
 
 /// Start the server
-pub async fn run_server(
-    RunServerConfig {
-        db,
-        profile_static_dir,
-***REMOVED***: RunServerConfig,
-) {
+pub async fn run_server(RunServerConfig { db, static_dir ***REMOVED***: RunServerConfig) {
     static NOT_FOUND: (StatusCode, &str) = (StatusCode::NOT_FOUND, "Not found");
 
     let active_users = get({
@@ -137,7 +132,6 @@ pub async fn run_server(
     let health_check = get("OK");
 
     let app = Router::new()
-        .fallback(NOT_FOUND)
         .nest(
             "/api/",
             Router::new()
@@ -149,9 +143,11 @@ pub async fn run_server(
         .nest(
             "/profile/:pgrid_id/",
             Router::new()
+                .route_service("/", ServeFile::new("client/dist/profile/name/index.html"))
                 .route("/data.json", profile)
-                .nest_service("/", ServeDir::new(profile_static_dir)),
-    ***REMOVED***;
+    ***REMOVED***
+        .nest_service("/", ServeDir::new("client/dist"))
+        .fallback(NOT_FOUND);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3232").await.unwrap();
     axum::serve(listener, app).await.unwrap();

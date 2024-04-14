@@ -1,8 +1,8 @@
-import { defineConfig ***REMOVED*** from 'astro/config';
+import { defineConfig ***REMOVED*** from "astro/config";
 
 import solidJs from "@astrojs/solid-js";
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [solidJs()]
+  integrations: [solidJs()],
 ***REMOVED***);

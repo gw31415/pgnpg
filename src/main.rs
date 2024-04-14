@@ -7,7 +7,7 @@ use serde::Deserialize;
 
 #[derive(Deserialize)]
 struct Environment {
-    profile_static_dir: PathBuf,
+    static_dir: PathBuf,
 ***REMOVED***
 
 #[derive(Debug, thiserror::Error)]
@@ -34,7 +34,7 @@ async fn main(***REMOVED***
     // Run the server
     run_server(api::RunServerConfig {
         db,
-        profile_static_dir: env.profile_static_dir,
+        static_dir: env.static_dir,
 ***REMOVED***)
 ***REMOVED***;
 
