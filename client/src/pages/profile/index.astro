@@ -120,6 +120,6 @@ document.querySelector('form')!.addEventListener('submit', e => {
 	e.preventDefault()
 	const form = new FormData((e.target as HTMLFormElement));
 	const id = form.get('id') as string;
-	location.href = `/profile/${id***REMOVED***/`
+	location.href = `/profile/${encodeURIComponent(id)***REMOVED***/`
 ***REMOVED***)
 </script>
