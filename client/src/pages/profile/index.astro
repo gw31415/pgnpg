@@ -114,7 +114,7 @@ document.getElementsByTagName("main")[0].style.display = "flex";
 document.querySelector('div.input input')!.addEventListener('input', e => {
 	const input = e.target as HTMLInputElement;
 	const div = input.nextElementSibling as HTMLDivElement;
-	div.textContent = input.value.replace(' ', '_');
+	div.textContent = input.value.replaceAll(' ', '_');
 ***REMOVED***)
 document.querySelector('form')!.addEventListener('submit', e => {
 	e.preventDefault()
