@@ -3,8 +3,8 @@ type numeric = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
 /**
  * 日付を表す型
  */
-export type Date =
-	`${numeric***REMOVED***${numeric***REMOVED***${numeric***REMOVED***${numeric***REMOVED***-${numeric***REMOVED***${numeric***REMOVED***-${numeric***REMOVED***${numeric***REMOVED***`;
+export type Date = string;
+	//`${numeric***REMOVED***${numeric***REMOVED***${numeric***REMOVED***${numeric***REMOVED***-${numeric***REMOVED***${numeric***REMOVED***-${numeric***REMOVED***${numeric***REMOVED***`;
 
 /**
  * ユーザ情報
