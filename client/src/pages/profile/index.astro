@@ -51,7 +51,7 @@ import Main from "../../layouts/Main.astro"
 		***REMOVED***
 	***REMOVED***
 	main {
-		height: 50vh;
+		height: calc(50vh + 2.5lh);
 		flex-direction: column;
 		justify-content: end;
 		align-items: center;
@@ -80,6 +80,7 @@ import Main from "../../layouts/Main.astro"
 		***REMOVED***
 
 		& > * {
+			height: 1lh;
 			margin-left: .3ch;
 			max-width: 100%;
 		***REMOVED***
@@ -97,7 +98,7 @@ import Main from "../../layouts/Main.astro"
 		caret-color: black;
 
 		// 調整
-		transform: translateY(11%);
+		transform: translateY(25%);
 
 		position: absolute;
 		left: 0; right: 0; top: 0; bottom: 0;
