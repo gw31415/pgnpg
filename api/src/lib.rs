@@ -2,7 +2,13 @@ mod usecase;
 
 use std::{collections::HashSet, path::PathBuf***REMOVED***
 
-use axum::{extract::Path, http::StatusCode, response::IntoResponse, routing::get, Router***REMOVED***
+use axum::{
+    extract::Path,
+    http::StatusCode,
+    response::IntoResponse,
+    routing::{any, get***REMOVED***,
+    Router,
+***REMOVED***
 use reqwest::header;
 use sea_orm::DatabaseConnection;
 use serde::Serialize;
@@ -93,6 +99,8 @@ pub struct RunServerConfig {
 /// Start the server
 pub async fn run_server(RunServerConfig { db, static_dir ***REMOVED***: RunServerConfig) {
     static NOT_FOUND: (StatusCode, &str) = (StatusCode::NOT_FOUND, "Not found");
+    static INTERNAL_SERVER_ERROR: (StatusCode, &str) =
+        (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error");
 
     let active_users = get({
         let db = db.clone();
@@ -111,10 +119,10 @@ pub async fn run_server(RunServerConfig { db, static_dir ***REMOVED***: RunServe
             let now = chrono::Utc::now();
             match profile(&db, now, &pgrit_id).await {
                 Ok(Some(profile)) => Ok(json(profile)),
-                Ok(None) => Err((StatusCode::NOT_FOUND, "No data")),
+                Ok(None) => Err(NOT_FOUND),
                 Err(e) => {
                     eprintln!("{:?***REMOVED***", e);
-                    Err((StatusCode::INTERNAL_SERVER_ERROR, "Internal server error"))
+                    Err(INTERNAL_SERVER_ERROR)
             ***REMOVED***
         ***REMOVED***
     ***REMOVED***
@@ -154,11 +162,7 @@ pub async fn run_server(RunServerConfig { db, static_dir ***REMOVED***: RunServe
     ***REMOVED***
         .nest_service(
             "/",
-            ServeDir::new(static_dir)
-                .precompressed_br()
-                .precompressed_gzip()
-                .precompressed_zstd()
-                .precompressed_deflate(),
+            ServeDir::new(static_dir).not_found_service(any(NOT_FOUND)),
     ***REMOVED***
         .layer(CompressionLayer::new())
         .fallback(NOT_FOUND);
