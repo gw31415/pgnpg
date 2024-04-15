@@ -170,8 +170,9 @@
 import type UserProfile from "../../../types";
 import WebFont from "webfontloader";
 
-function enableTyping(e: Element) {
+function enableTyping(e: Element, msg?: string) {
 	const el = e as HTMLElement;
+	if (msg) errmsg.textContent = msg;
 	const len = `${el.textContent***REMOVED***`.length + 1;
 	el.style.animation = `typing ${Math.min(1, 0.1 * len)***REMOVED***s steps(${len***REMOVED***), blink .4s step-end infinite alternate`;
 	el.style.width = `${len***REMOVED***ch`;
@@ -181,14 +182,13 @@ function enableTyping(e: Element) {
 	***REMOVED***);
 ***REMOVED***
 
-document.getElementById("errmsg")!.textContent = "Loading...";
+const errmsg = document.getElementById("errmsg")!;
+enableTyping(errmsg, "Loading...");
 
 const data: UserProfile = await fetch("data.json").then((res) => {
 	if (!res.ok) {
-		const err = document.getElementById("errmsg")!;
-		err.textContent = "User Not Found.";
-		err.style.display = "block";
-		enableTyping(err);
+		enableTyping(errmsg, "User Not Found.");
+		errmsg.style.display = "block";
 		return undefined;
 	***REMOVED***
 	return res.json();
@@ -213,7 +213,7 @@ function start() {
 	document.getElementById("title")!.textContent = '@' + data.user.pgrit_id;
 	document.getElementById("updatedat")!.textContent = new Date(data.pgn.updated_at).toLocaleString();
 
-	document.querySelectorAll(".typing").forEach(enableTyping);
+	document.querySelectorAll(".typing").forEach((e) => enableTyping(e));
 
 	const circle = document.getElementsByTagName("circle-progress")[0]! as any;
 	if (data.pgn.level === "GrandMaster") {
