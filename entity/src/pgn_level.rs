@@ -95,29 +95,29 @@ impl<T: SaturatingCast + saturating_cast::SaturatingElement<i8>> SubAssign<T> fo
 ***REMOVED***
 
 impl PgnLevel {
-    pub fn max_pix(self) -> u32 {
+    pub fn min_pix(self) -> u32 {
         use max_values::*;
         match self {
-            PgnLevel::Iron => IRON_MAX,
-            PgnLevel::Bronze => BRONZE_MAX,
-            PgnLevel::Silver => SILVER_MAX,
-            PgnLevel::Gold => GOLD_MAX,
-            PgnLevel::Platinum => PLATINUM_MAX,
-            PgnLevel::Diamond => DIAMOND_MAX,
-            PgnLevel::Master => MASTER_MAX,
-            PgnLevel::GrandMaster => u32::MAX,
+            PgnLevel::Iron => 0,
+            PgnLevel::Bronze => BRONZE_MIN,
+            PgnLevel::Silver => SILVER_MIN,
+            PgnLevel::Gold => GOLD_MIN,
+            PgnLevel::Platinum => PLATINUM_MIN,
+            PgnLevel::Diamond => DIAMAND_MIN,
+            PgnLevel::Master => MASTER_MIN,
+            PgnLevel::GrandMaster => GRANDMASTER_MIN,
     ***REMOVED***
 ***REMOVED***
 ***REMOVED***
 
 pub mod max_values {
-    pub const IRON_MAX: u32 = 500;
-    pub const BRONZE_MAX: u32 = 1000;
-    pub const SILVER_MAX: u32 = 2500;
-    pub const GOLD_MAX: u32 = 5000;
-    pub const PLATINUM_MAX: u32 = 10000;
-    pub const DIAMOND_MAX: u32 = 20000;
-    pub const MASTER_MAX: u32 = 35000;
+    pub const BRONZE_MIN: u32 = 500;
+    pub const SILVER_MIN: u32 = 1000;
+    pub const GOLD_MIN: u32 = 2500;
+    pub const PLATINUM_MIN: u32 = 5000;
+    pub const DIAMAND_MIN: u32 = 10000;
+    pub const MASTER_MIN: u32 = 20000;
+    pub const GRANDMASTER_MIN: u32 = 35000;
 ***REMOVED***
 
 impl From<u32> for PgnLevel {
@@ -125,13 +125,13 @@ impl From<u32> for PgnLevel {
         use max_values::*;
         use PgnLevel::*;
         match pix_monthly {
-            pix if pix < IRON_MAX => Iron,
-            pix if pix < BRONZE_MAX => Bronze,
-            pix if pix < SILVER_MAX => Silver,
-            pix if pix < GOLD_MAX => Gold,
-            pix if pix < PLATINUM_MAX => Platinum,
-            pix if pix < DIAMOND_MAX => Diamond,
-            pix if pix < MASTER_MAX => Master,
+            pix if pix < BRONZE_MIN => Iron,
+            pix if pix < SILVER_MIN => Bronze,
+            pix if pix < GOLD_MIN => Silver,
+            pix if pix < PLATINUM_MIN => Gold,
+            pix if pix < DIAMAND_MIN => Platinum,
+            pix if pix < MASTER_MIN => Diamond,
+            pix if pix < GRANDMASTER_MIN => Master,
             _ => GrandMaster,
     ***REMOVED***
 ***REMOVED***

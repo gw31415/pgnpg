@@ -74,7 +74,7 @@ pub async fn fetch(start: NaiveDate, end: NaiveDate) -> Result<Vec<Record>, Erro
 ***REMOVED***
 ***REMOVED***
 
-        let base_pix = (level - 1).max_pix();
+***REMOVED***
 ***REMOVED***
 
 ***REMOVED***
@@ -82,7 +82,7 @@ pub async fn fetch(start: NaiveDate, end: NaiveDate) -> Result<Vec<Record>, Erro
 ***REMOVED***
 ***REMOVED***
 ***REMOVED***
-            let t = level.max_pix();
+***REMOVED***
 ***REMOVED***
 ***REMOVED***
 ***REMOVED***
