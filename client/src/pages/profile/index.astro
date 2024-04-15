@@ -109,6 +109,7 @@ import Main from "../../layouts/Main.astro"
 <script>
 document.getElementById("errmsg")!.style.display = "none";
 document.getElementsByTagName("main")[0].style.display = "flex";
+document.getElementsByTagName("main")[0].style.minHeight = "0";
 
 const input = document.querySelector('div.input input')! as HTMLInputElement;
 const setLength = () => {
