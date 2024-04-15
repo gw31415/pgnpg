@@ -1,46 +1,29 @@
-<html lang="ja" class="wf-inactive">
-<head>
-<meta charset="utf-8" />
-<title>PGN Profile</title>
-<meta name="description" content="PGNを簡易表示" />
-<meta name="keywords" content="PGN,PIX" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0" />
-<meta name="format-detection" content="telephone=no,email=no,address=no" />
-<link rel="icon" href="favicon.ico" />
-<link rel="apple-touch-icon" href="icon.png" />
-<link rel="stylesheet" href="https://unpkg.com/modern-css-reset/dist/reset.min.css" />
-<link rel="canonical" href="" />
+---
+import Main from "../../../layouts/Main.astro";
+---
+<Fragment slot="head">
+	<script is:inline src="https://cdn.jsdelivr.net/npm/js-circle-progress/dist/circle-progress.min.js" type="module"></script>
+</Fragment>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<Main>
+	<header style="display:flex;justify-content:space-between;align-items:center">
+		<div id="title" class="typing" style="font-size:2rem">@</div>
+		<div id="updatedat" style="text-align:right"></div>
+	</header>
+	<main>
+		<section style="height:calc(100vh - 6rem);margin-bottom:3rem;display:flex;flex-direction:column;align-items:center;justify-content:space-evenly">
+			<h1 id="level" style="opacity:0;transition:opacity 1s;font-size:3.5rem;font-family:'Jersey 10',monospace"></h1>
+			<div><circle-progress text-format="vertical"></circle-progress></div>
+		</section>
+		<section id="daily-chart" style="height:150vh;width:100vw;padding:.5rem">
+			<h2>Daily PIX</h2>
+			<canvas></canvas>
+		</section>
+	</main>
+	<div class="typing" id="errmsg">Please Enable JavaScript.</div>
+</Main>
 
-<!-- OGP -->
-<meta property="og:url" content="https://pgn.amas.dev" />
-<!--<meta property="og:type" content="" />-->
-<meta property="og:title" content="PGN Profile" />
-<meta property="og:description" content="PGNを簡易表示" />
-<meta property="og:site_name" content="pgn.amas.dev" />
-<!-- <meta property="og:image" content="" /> -->
-<meta property="og:locale" content="ja_JP" />
-
-<!-- OGP Facebook -->
-<!--<meta property="fb:app_id" content="" />-->
-
-<!-- OGP Twitter -->
-<!--<meta name="twitter:card" content="" />-->
-<!--<meta name="twitter:site" content="" />-->
-<!--<meta name="twitter:creator" content="" />-->
-<!--<meta name="twitter:title" content="{{ title ***REMOVED******REMOVED***" />-->
-<!--<meta name="twitter:description" content="" />-->
-<!--<meta name="twitter:image" content="" />-->
-
-<script is:inline src="https://cdn.jsdelivr.net/npm/js-circle-progress/dist/circle-progress.min.js" type="module"></script>
 <style lang="scss">
-	html,
-	body {
-		font-family: sans-serif;
-	***REMOVED***
-
 	circle-progress::part(base) {
 		height: 60vmin;
 		width: 60vmin;
@@ -117,16 +100,11 @@
 		transition: opacity .2s;
 	***REMOVED***
 
-	#errmsg {
-		display: none;
-		transition: opacity .2s;
-		font-size: 24px;
-		animation: typing 2.6s steps(26), blink .4s step-end infinite alternate;
-		width: 26ch;
+	header {
+		padding: .5rem;
 	***REMOVED***
 
-	.wf-inactive body,
-	body.initializing {
+	body {
 		display: flex;
 		justify-content: center;
 		align-items: center;
@@ -138,33 +116,26 @@
 		***REMOVED***
 		#errmsg {
 			display: block;
+			transition: opacity .2s;
+			animation: typing 2.6s steps(26), blink .4s step-end infinite alternate;
+			width: 26ch;
 		***REMOVED***
-
 	***REMOVED***
-	header {
-		padding: .5rem;
+
+	html.wf-active.ready {
+		body {
+			display: block;
+		***REMOVED***
+		header, main {
+			opacity: 1;
+			width: 100%;
+			height: auto;
+		***REMOVED***
+		#errmsg {
+			display: none;
+		***REMOVED***
 	***REMOVED***
 </style>
-
-<body class="initializing">
-	<header style="display:flex;justify-content:space-between;align-items:center">
-		<div id="title" class="typing" style="font-size:2rem">@</div>
-		<div id="updatedat" style="text-align:right"></div>
-	</header>
-	<main>
-		<section style="height:calc(100vh - 3rem);display:flex;flex-direction:column;align-items:center;justify-content:space-evenly">
-			<div>
-				<div id="level" style="opacity:0;transition:opacity 1s;font-size:3.5rem;font-family:'Jersey 10',monospace"></div>
-			</div>
-			<div><circle-progress text-format="vertical"></circle-progress></div>
-		</section>
-		<section id="daily-chart" style="height:150vh;width:100vw;padding:.5rem">
-			<canvas></canvas>
-		</section>
-	</main>
-	<div class="typing" id="errmsg">Please Enable JavaScript.</div>
-</body>	
-</html>
 
 <script>
 import type {PgnLevel***REMOVED*** from "../../../types";
@@ -196,7 +167,12 @@ const data: UserProfile = await fetch("data.json").then((res) => {
 	return res.json();
 ***REMOVED***);
 
-if (data === undefined) throw new Error("User Not Found.");
+if (data === undefined) {
+	document.title ="Not Found - PGN Profile";
+	throw new Error("User Not Found.");
+***REMOVED*** else {
+	document.title = `@${data.user.pgrit_id***REMOVED*** - PGN Profile`;
+***REMOVED***
 
 WebFont.load({
 	google: {
@@ -234,7 +210,7 @@ async function start() {
 
 	document.querySelectorAll(".typing").forEach((e) => enableTyping(e));
 
-	const circle = document.getElementsByTagName("circle-progress")[0]! as any;
+	const circle = document.getElementsByTagName("circle-progress")[0]! as HTMLElement;
 	if (data.pgn.level === "GrandMaster") {
 		circle.setAttribute("value","100");
 		circle.setAttribute("max","100");
@@ -254,7 +230,7 @@ async function start() {
 	level.style.opacity = "1";
 	level.textContent = `${data.pgn.level***REMOVED***`;
 
-	document.body.classList.remove("initializing");
+	document.getElementsByTagName("html")[0]!.classList.add("ready");
 
 	const daily = Object.entries(data.pgn.daily).sort((a, b) => -a[0].localeCompare(b[0]));
 

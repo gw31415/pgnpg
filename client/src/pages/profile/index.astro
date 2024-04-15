@@ -1,0 +1,117 @@
+---
+import Main from "../../layouts/Main.astro"
+---
+
+<Main>
+	<main>
+		<form>
+			<h1>PGN Profile:</h1>
+			<div>
+				View<wbr/>
+				<span style="text-wrap: nowrap;">@<div class="input">
+					<input type="text" name="id" autofocus required pattern="\\w+" maxlength="40"/>
+					<div>a</div>
+				</div>'s</span>
+				<wbr/>profile;
+			</div>
+			<div>/* Press ENTER to enter */</div>
+			<button type="submit" style="display:none"></button>
+		</form>
+	</main>
+	<div id="errmsg">Please Enable JavaScript.</div>
+</Main>
+
+<style lang="scss">
+	#errmsg {
+		max-width: 100%;
+		width: 26ch;
+		animation: typing 2.6s steps(26), blink .5s step-end infinite alternate;
+		white-space: nowrap;
+		overflow: scroll;
+		border-right: 2px solid;
+		font-family: monospace;
+	***REMOVED***
+	@keyframes typing {
+		from {
+			width: 0
+		***REMOVED***
+	***REMOVED***
+	@keyframes blink {
+		50% {
+			border-color: transparent
+		***REMOVED***
+	***REMOVED***
+	main {
+		height: 100%;
+		justify-content: center;
+		align-items: center;
+		font-size: 1.5rem;
+		font-family: monospace;
+		display: none;
+	***REMOVED***
+	body {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	***REMOVED***
+
+	form {
+		padding: .5rem;
+	***REMOVED***
+	form>div {
+		overflow-wrap: break-word;
+	***REMOVED***
+	div.input {
+		position: relative;
+		display: inline-block;
+		text-align: center;
+		max-width: calc(100vw - 3.5ch - 1rem); // viewport - "@'s" -  - padding
+		div {
+			display: inline-block;
+			overflow: hidden;
+			min-width: 1ch;
+			white-space: nowrap;
+			visibility: hidden;
+		***REMOVED***
+
+		& > * {
+			margin-left: .3ch;
+			max-width: 100%;
+		***REMOVED***
+	***REMOVED***
+	input {
+		margin: 0;
+		padding: 0;
+		background: none;
+		border: none;
+		border-radius: 0;
+		outline: none;
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		appearance: none;
+		caret-color: black;
+
+		// 調整
+		transform: translateY(11%);
+
+		position: absolute;
+		left: 0; right: 0; top: 0; bottom: 0;
+	***REMOVED***
+</style>
+
+<script>
+document.getElementById("errmsg")!.style.display = "none";
+document.getElementsByTagName("main")[0].style.display = "flex";
+
+document.querySelector('div.input input')!.addEventListener('input', e => {
+	const input = e.target as HTMLInputElement;
+	const div = input.nextElementSibling as HTMLDivElement;
+	div.textContent = input.value;
+***REMOVED***)
+document.querySelector('form')!.addEventListener('submit', e => {
+	e.preventDefault()
+	const form = new FormData((e.target as HTMLFormElement));
+	const id = form.get('id') as string;
+	location.href = `/profile/${id***REMOVED***/`
+***REMOVED***)
+</script>
