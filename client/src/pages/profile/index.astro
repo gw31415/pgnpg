@@ -112,15 +112,18 @@ import Main from "../../layouts/Main.astro"
 document.getElementById("errmsg")!.style.display = "none";
 document.getElementsByTagName("main")[0].style.display = "flex";
 
-document.querySelector('div.input input')!.addEventListener('input', e => {
-	const input = e.target as HTMLInputElement;
+const input = document.querySelector('div.input input')! as HTMLInputElement;
+const setLength = () => {
 	const div = input.nextElementSibling as HTMLDivElement;
 	div.textContent = input.value.replaceAll(' ', '_');
-***REMOVED***)
+***REMOVED***
+input.addEventListener('input', setLength);
+document.addEventListener('DOMContentLoaded', setLength);
+
 document.querySelector('form')!.addEventListener('submit', e => {
 	e.preventDefault()
 	const form = new FormData((e.target as HTMLFormElement));
 	const id = form.get('id') as string;
 	location.href = `/profile/${encodeURIComponent(id)***REMOVED***/`
-***REMOVED***)
+***REMOVED***);
 </script>
