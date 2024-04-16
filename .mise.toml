@@ -1,8 +1,11 @@
 [tools]
 pnpm = "latest"
 node = "latest"
-rome = "latest"
 "npm:@biomejs/biome" = "latest"
 
 [env]
 '_'.file = ".env"
+
+[tasks.format]
+run = "biome check --apply ."
+dir = "."
