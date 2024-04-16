@@ -6,19 +6,18 @@
 <meta name="keywords" content="PGN,PIX" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0" />
 <meta name="format-detection" content="telephone=no,email=no,address=no" />
-<link rel="icon" href="favicon.ico" />
-<link rel="apple-touch-icon" href="icon.png" />
 <link rel="stylesheet" href="https://unpkg.com/ress/dist/ress.min.css" />
-<link rel="canonical" href="" />
+<!--<link rel="apple-touch-icon" href="icon.png" />-->
+<link rel="icon" href="/favicon.svg" />
 
 <!-- OGP -->
 <meta property="og:url" content="https://pgn.amas.dev" />
-<!--<meta property="og:type" content="" />-->
 <meta property="og:title" content="PGN Profile" />
 <meta property="og:description" content="PGNを簡易表示" />
 <meta property="og:site_name" content="pgn.amas.dev" />
-<!-- <meta property="og:image" content="" /> -->
 <meta property="og:locale" content="ja_JP" />
+<!--<meta property="og:type" content="" />-->
+<!-- <meta property="og:image" content="" />-->
 
 <!-- OGP Facebook -->
 <!--<meta property="fb:app_id" content="" />-->
@@ -32,16 +31,73 @@
 <!--<meta name="twitter:image" content="" />-->
 
 <slot name="head" />
-<style lang="scss">
+<style lang="scss" is:global>
 	html,
 	body {
-		font-family: sans-serif;
-		min-height: 100%;
+		font-family: monospace;
 		line-height: 1.5;
+		min-height: 100vh;
+		min-height: 100dvh;
+	***REMOVED***
+	body {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+	***REMOVED***
+	main {
+		display: none;
+	***REMOVED***
+	#errmsg {
+		max-width: 100%;
+		width: 26ch;
+		animation: typing 2.6s steps(26), blink .5s step-end infinite alternate;
+		white-space: nowrap;
+		overflow: scroll;
+		border-right: 2px solid;
+		font-family: 'Roboto Mono', monospace;
+	***REMOVED***
+	html.wf-active {
+		font-family: sans-serif;
+		min-height: 0;
+		body {
+			font-family: sans-serif;
+			justify-content: start;
+			min-height: 0;
+		***REMOVED***
+		main {
+			display: block;
+		***REMOVED***
+		#errmsg {
+			display: none;
+		***REMOVED***
+	***REMOVED***
+
+	.typing {
+		max-width: 100%;
+		width: 0;
+		animation: blink .5s step-end infinite alternate;
+		white-space: nowrap;
+		overflow: scroll;
+		border-right: 2px solid;
+		font-family: 'Roboto Mono', monospace;
+	***REMOVED***
+
+	@keyframes typing {
+		from {
+			width: 0
+		***REMOVED***
+	***REMOVED***
+
+	@keyframes blink {
+		50% {
+			border-color: transparent
+		***REMOVED***
 	***REMOVED***
 </style>
 
 <body>
 	<slot />
+	<div id="errmsg">Please Enable JavaScript.</div>
 </body>	
 </html>

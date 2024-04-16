@@ -17,7 +17,6 @@ import Main from "../../layouts/Main.astro"
 			<div>/* Press <button type="submit">ENTER</button> to enter */</div>
 		</form>
 	</main>
-	<div id="errmsg">Please Enable JavaScript.</div>
 </Main>
 
 <style lang="scss">
@@ -31,15 +30,6 @@ import Main from "../../layouts/Main.astro"
         appearance: none;
 		text-decoration: underline;
 	***REMOVED***
-	#errmsg {
-		max-width: 100%;
-		width: 26ch;
-		animation: typing 2.6s steps(26), blink .5s step-end infinite alternate;
-		white-space: nowrap;
-		overflow: scroll;
-		border-right: 2px solid;
-		font-family: 'Roboto Mono', monospace;
-	***REMOVED***
 	@keyframes typing {
 		from {
 			width: 0
@@ -50,11 +40,13 @@ import Main from "../../layouts/Main.astro"
 			border-color: transparent
 		***REMOVED***
 	***REMOVED***
+	html.wf-active main {
+		display: flex; // wf-active になった後blockにならないように
+	***REMOVED***
 	main {
-		padding-top: 2lh;
-		// height: calc(50vh + 2.5lh);
+		height: calc(50vh + 2lh);
+		justify-content: end;
 		flex-direction: column;
-		// justify-content: end;
 		align-items: center;
 		font-size: 1.5rem;
 		font-family: 'Roboto Mono', monospace;
@@ -107,9 +99,7 @@ import Main from "../../layouts/Main.astro"
 </style>
 
 <script>
-document.getElementById("errmsg")!.style.display = "none";
-document.getElementsByTagName("main")[0].style.display = "flex";
-document.getElementsByTagName("main")[0].style.minHeight = "0";
+document.getElementsByTagName("html")[0].classList.add("wf-active");
 
 const input = document.querySelector('div.input input')! as HTMLInputElement;
 const setLength = () => {

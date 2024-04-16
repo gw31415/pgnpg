@@ -2,6 +2,7 @@
 import Main from "../../../layouts/Main.astro";
 ---
 <Fragment slot="head">
+	<link rel="canonical" href="https://pgn.amas.dev/profile/" />
 	<script is:inline src="https://cdn.jsdelivr.net/npm/js-circle-progress/dist/circle-progress.min.js" type="module"></script>
 </Fragment>
 
@@ -20,7 +21,6 @@ import Main from "../../../layouts/Main.astro";
 			<canvas></canvas>
 		</section>
 	</main>
-	<div class="typing" id="errmsg">Please Enable JavaScript.</div>
 </Main>
 
 <style lang="scss">
@@ -51,28 +51,6 @@ import Main from "../../../layouts/Main.astro";
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		text-fill-color: transparent;
-	***REMOVED***
-
-	.typing {
-		max-width: 100%;
-		width: 0;
-		animation: blink .5s step-end infinite alternate;
-		white-space: nowrap;
-		overflow: scroll;
-		border-right: 2px solid;
-		font-family: 'Roboto Mono', monospace;
-	***REMOVED***
-
-	@keyframes typing {
-		from {
-			width: 0
-		***REMOVED***
-	***REMOVED***
-
-	@keyframes blink {
-		50% {
-			border-color: transparent
-		***REMOVED***
 	***REMOVED***
 
 	@-webkit-keyframes svg {
@@ -115,14 +93,12 @@ import Main from "../../../layouts/Main.astro";
 			overflow: hidden;
 		***REMOVED***
 		#errmsg {
-			display: block;
-			transition: opacity .2s;
-			animation: typing 2.6s steps(26), blink .4s step-end infinite alternate;
-			width: 26ch;
+			display: block; // wf-activeでも無効化しない
 		***REMOVED***
 	***REMOVED***
 
 	html.wf-active.ready {
+		// wf-activeかつreadyなら非表示
 		body {
 			display: block;
 		***REMOVED***
@@ -132,7 +108,7 @@ import Main from "../../../layouts/Main.astro";
 			height: auto;
 		***REMOVED***
 		#errmsg {
-			display: none;
+			display: none; // wf-activeかつreadyなら非表示
 		***REMOVED***
 	***REMOVED***
 </style>
