@@ -1,5 +1,5 @@
-import { defineConfig ***REMOVED*** from "astro/config";
 import solidJs from "@astrojs/solid-js";
+import { defineConfig ***REMOVED*** from "astro/config";
 
 import Default from "astro-compress";
 
