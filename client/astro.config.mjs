@@ -5,7 +5,10 @@ import Default from "astro-compress";
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [solidJs(), Default({
-    JavaScript: false,
-  ***REMOVED***)]
+  integrations: [
+    solidJs(),
+    Default({
+      JavaScript: false,
+***REMOVED***),
+  ],
 ***REMOVED***);

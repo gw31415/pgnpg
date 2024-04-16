@@ -1,0 +1,14 @@
+{
+	"javascript": {
+		"globals": ["Astro"],
+		"formatter": {
+			"indentStyle": "space",
+			"indentWidth": 2
+		***REMOVED***
+	***REMOVED***,
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	***REMOVED***
+***REMOVED***
