@@ -1,6 +1,8 @@
 [tools]
 pnpm = "latest"
 node = "latest"
+rome = "latest"
+"npm:@biomejs/biome" = "latest"
 
 [env]
 '_'.file = ".env"
