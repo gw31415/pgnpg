@@ -9,6 +9,7 @@ use axum::{
     routing::{any, get},
     Router,
 };
+use chrono::Local;
 use reqwest::header;
 use sea_orm::DatabaseConnection;
 use serde::Serialize;
@@ -46,7 +47,7 @@ async fn refresh(db: &DatabaseConnection, fetch_url: &str) {
     let mut active_users_pre: Option<_> = None;
 
     // 最初に最低限必要な日付を取得
-    let end = now.naive_local().date();
+    let end = now.with_timezone(&Local).date_naive();
     // 最低一日は取得
     let start = if let Some(last_datetime) = get_last_updated_at(db).await.unwrap() {
         // 30分以上の間隔がない場合は中止
@@ -59,8 +60,8 @@ async fn refresh(db: &DatabaseConnection, fetch_url: &str) {
         active_users_pre = usecase::active_users(db).await.unwrap();
 
         last_datetime
-            .naive_local()
-            .date()
+            .with_timezone(&Local)
+            .date_naive()
             .succ_opt()
             .unwrap()
             .min(end - chrono::Duration::days(1))
