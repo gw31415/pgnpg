@@ -7,8 +7,25 @@ node = "latest"
 '_'.file = ".env"
 
 [tasks.format]
+description = "Format the code"
 run = [
 	"cargo fmt --all",
 	"biome check --apply .",
 ]
 dir = "."
+
+[tasks.build-client]
+description = "Build the client"
+run = "pnpm astro build"
+dir = "client"
+
+[tasks.default]
+description = "Build the client and run the server"
+run = "cargo run"
+dir = "."
+depends = ["build-client"]
+
+[tasks.dev-client]
+description = "Run the client in development mode"
+run = "pnpm dev"
+dir = "client"
