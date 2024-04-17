@@ -8,5 +8,5 @@ pub struct Migrator;
 impl MigratorTrait for Migrator {
     fn migrations() -> Vec<Box<dyn MigrationTrait>> {
         vec![Box::new(m20240410_000001_create_table::Migration)]
-***REMOVED***
-***REMOVED***
+    }
+}

@@ -3,7 +3,7 @@
 use sea_orm::entity::prelude::*;
 use serde::Serialize;
 
-use crate::{degree::Degree, level::Level, sex::Sex***REMOVED***
+use crate::{degree::Degree, level::Level, sex::Sex};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize)]
 #[sea_orm(table_name = "students")]
@@ -41,18 +41,18 @@ pub struct Model {
     pub slack_id: String,
     /// Discord ID
     pub discord_id: Option<String>,
-***REMOVED***
+}
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(has_one = "super::user::Entity")]
     User,
-***REMOVED***
+}
 
 impl Related<super::user::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::User.def()
-***REMOVED***
-***REMOVED***
+    }
+}
 
-impl ActiveModelBehavior for ActiveModel {***REMOVED***
+impl ActiveModelBehavior for ActiveModel {}

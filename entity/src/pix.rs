@@ -11,7 +11,7 @@ pub struct Model {
     pub user_id: String,
 
     pub amount: u32,
-***REMOVED***
+}
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
@@ -19,14 +19,14 @@ pub enum Relation {
         belongs_to = "super::user::Entity",
         from = "Column::UserId",
         to = "super::user::Column::Id"
-***REMOVED***]
+    )]
     User,
-***REMOVED***
+}
 
 impl Related<super::user::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::User.def()
-***REMOVED***
-***REMOVED***
+    }
+}
 
-impl ActiveModelBehavior for ActiveModel {***REMOVED***
+impl ActiveModelBehavior for ActiveModel {}

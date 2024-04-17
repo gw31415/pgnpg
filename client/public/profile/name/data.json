@@ -2,7 +2,7 @@
 	"user": {
 		"id": "0x1cdFA2ec8585DcF0Cb20a41aB915f47FD8803dd8",
 		"pgrit_id": "ama"
-	***REMOVED***,
+	},
 	"student": {
 		"user_id": "0x1cdFA2ec8585DcF0Cb20a41aB915f47FD8803dd8",
 		"degree_step": "Bachelor",
@@ -20,7 +20,7 @@
 		"active": true,
 		"slack_id": "Ama / Yuki Okugawa",
 		"discord_id": "430550091846385674"
-	***REMOVED***,
+	},
 	"created_at": "2024-04-13T12:46:17.349819176Z",
 	"pgn": {
 		"updated_at": "2024-04-13T00:03:01.736602659Z",
@@ -53,7 +53,7 @@
 			"2024-04-01": 930,
 			"2024-03-29": 875,
 			"2024-03-26": 1495
-		***REMOVED***,
+		},
 		"level": "Master",
 		"last_month": 32495,
 		"on_level": 12495,
@@ -61,5 +61,5 @@
 		"progress": 0.833,
 		"target": 35000,
 		"behind_next": 2505
-	***REMOVED***
-***REMOVED***
+	}
+}

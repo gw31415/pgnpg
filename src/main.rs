@@ -1,14 +1,15 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, sync::Arc};
 
 use api::run_server;
-use migration::{Migrator, MigratorTrait***REMOVED***
-***REMOVED***ConnectOptions, Database***REMOVED***
+use migration::{Migrator, MigratorTrait};
+use sea_orm::{ConnectOptions, Database};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
 struct Environment {
     static_dir: PathBuf,
-***REMOVED***
+    fetch_url: Arc<str>,
+}
 
 #[derive(Debug, thiserror::Error)]
 enum Error {
@@ -18,10 +19,10 @@ enum Error {
     Entity(#[from] entity::error::Error),
     #[error(transparent)]
     Db(#[from] sea_orm::error::DbErr),
-***REMOVED***
+}
 
 #[tokio::main]
-async fn main(***REMOVED***
+async fn main() -> Result<(), Error> {
     let env = envy::from_env::<Environment>()?;
 
     // Connect to the database
@@ -35,8 +36,9 @@ async fn main(***REMOVED***
     run_server(api::RunServerConfig {
         db,
         static_dir: env.static_dir,
-***REMOVED***)
-***REMOVED***;
+        fetch_url: env.fetch_url,
+    })
+    .await;
 
-***REMOVED***
-***REMOVED***
+    Ok(())
+}

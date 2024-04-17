@@ -1,8 +1,8 @@
 use std::{
     fmt::Display,
-    ops::{Add, AddAssign, Sub, SubAssign***REMOVED***,
+    ops::{Add, AddAssign, Sub, SubAssign},
     str::FromStr,
-***REMOVED***
+};
 
 use num_derive::FromPrimitive;
 use saturating_cast::SaturatingCast;
@@ -19,7 +19,7 @@ pub enum PgnLevel {
     Diamond = 5,
     Master = 6,
     GrandMaster = 7,
-***REMOVED***
+}
 
 impl AsRef<str> for PgnLevel {
     fn as_ref(&self) -> &str {
@@ -32,15 +32,15 @@ impl AsRef<str> for PgnLevel {
             PgnLevel::Diamond => "Diamond",
             PgnLevel::Master => "Master",
             PgnLevel::GrandMaster => "GrandMaster",
-    ***REMOVED***
-***REMOVED***
-***REMOVED***
+        }
+    }
+}
 
 impl Display for PgnLevel {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{***REMOVED***", self.as_ref())
-***REMOVED***
-***REMOVED***
+        write!(f, "{}", self.as_ref())
+    }
+}
 
 impl FromStr for PgnLevel {
     type Err = &'static str;
@@ -56,43 +56,43 @@ impl FromStr for PgnLevel {
             "Master" => Ok(PgnLevel::Master),
             "GrandMaster" => Ok(PgnLevel::GrandMaster),
             _ => Err("invalid value"),
-    ***REMOVED***
-***REMOVED***
-***REMOVED***
+        }
+    }
+}
 
 fn cast(step: i8) -> PgnLevel {
     match step {
         step if step < PgnLevel::Iron as i8 => PgnLevel::Iron,
         step if step > PgnLevel::GrandMaster as i8 => PgnLevel::GrandMaster,
-        step => unsafe { std::mem::transmute(step) ***REMOVED***,
-***REMOVED***
-***REMOVED***
+        step => unsafe { std::mem::transmute(step) },
+    }
+}
 
 impl<T: SaturatingCast + saturating_cast::SaturatingElement<i8>> Add<T> for PgnLevel {
     type Output = Self;
     fn add(self, step: T) -> Self::Output {
         cast((self as i8).saturating_add(step.saturating_cast()))
-***REMOVED***
-***REMOVED***
+    }
+}
 
 impl<T: SaturatingCast + saturating_cast::SaturatingElement<i8>> AddAssign<T> for PgnLevel {
     fn add_assign(&mut self, step: T) {
         *self = *self + step;
-***REMOVED***
-***REMOVED***
+    }
+}
 
 impl<T: SaturatingCast + saturating_cast::SaturatingElement<i8>> Sub<T> for PgnLevel {
     type Output = Self;
     fn sub(self, step: T) -> Self::Output {
         cast((self as i8).saturating_sub(step.saturating_cast()))
-***REMOVED***
-***REMOVED***
+    }
+}
 
 impl<T: SaturatingCast + saturating_cast::SaturatingElement<i8>> SubAssign<T> for PgnLevel {
     fn sub_assign(&mut self, step: T) {
         *self = *self - step;
-***REMOVED***
-***REMOVED***
+    }
+}
 
 impl PgnLevel {
     pub fn min_pix(self) -> u32 {
@@ -106,9 +106,9 @@ impl PgnLevel {
             PgnLevel::Diamond => DIAMAND_MIN,
             PgnLevel::Master => MASTER_MIN,
             PgnLevel::GrandMaster => GRANDMASTER_MIN,
-    ***REMOVED***
-***REMOVED***
-***REMOVED***
+        }
+    }
+}
 
 pub mod max_values {
     pub const BRONZE_MIN: u32 = 500;
@@ -118,7 +118,7 @@ pub mod max_values {
     pub const DIAMAND_MIN: u32 = 10000;
     pub const MASTER_MIN: u32 = 20000;
     pub const GRANDMASTER_MIN: u32 = 35000;
-***REMOVED***
+}
 
 impl From<u32> for PgnLevel {
     fn from(pix_monthly: u32) -> Self {
@@ -133,6 +133,6 @@ impl From<u32> for PgnLevel {
             pix if pix < MASTER_MIN => Diamond,
             pix if pix < GRANDMASTER_MIN => Master,
             _ => GrandMaster,
-    ***REMOVED***
-***REMOVED***
-***REMOVED***
+        }
+    }
+}

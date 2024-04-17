@@ -27,20 +27,20 @@ import Main from "../../../layouts/Main.astro";
 	circle-progress::part(base) {
 		height: 60vmin;
 		width: 60vmin;
-	***REMOVED***
+	}
 	circle-progress::part(value) {
 		stroke-width: 3px;
 		stroke: white;
 		stroke-linecap: round;
-	***REMOVED***
+	}
 	circle-progress::part(circle) {
 		stroke-width: 6px;
 		stroke: #888;
-	***REMOVED***
+	}
 	circle-progress::part(text) {
 		fill: #888;
 		font-family: 'Orbitron', sans-serif;
-	***REMOVED***
+	}
 
 	.rainbow {
 		background: linear-gradient(to-right, #FF0000, #FF7F00, #FFFF00, #00FF00, #0000FF, #4B0082, #8B00FF);
@@ -51,36 +51,36 @@ import Main from "../../../layouts/Main.astro";
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		text-fill-color: transparent;
-	***REMOVED***
+	}
 
 	@-webkit-keyframes svg {
 		0% {
 			stroke-dashoffset: 2000;
 			fill: transparent;
-		***REMOVED***
+		}
 
 		40% {
 			stroke-dashoffset: 2000;
 			fill: transparent;
-		***REMOVED***
+		}
 
 		50% {
 			fill: transparent;
-		***REMOVED***
+		}
 
 		100% {
 			stroke-dashoffset: 0;
 			fill: #888;
-		***REMOVED***
-	***REMOVED***
+		}
+	}
 
 	header, main {
 		transition: opacity .2s;
-	***REMOVED***
+	}
 
 	header {
 		padding: .5rem;
-	***REMOVED***
+	}
 
 	body {
 		display: flex;
@@ -91,30 +91,30 @@ import Main from "../../../layouts/Main.astro";
 			width: 0;
 			height: 0;
 			overflow: hidden;
-		***REMOVED***
+		}
 		#errmsg {
 			display: block; // wf-activeでも無効化しない
-		***REMOVED***
-	***REMOVED***
+		}
+	}
 
 	html.wf-active.ready {
 		// wf-activeかつreadyなら非表示
 		body {
 			display: block;
-		***REMOVED***
+		}
 		header, main {
 			opacity: 1;
 			width: 100%;
 			height: auto;
-		***REMOVED***
+		}
 		#errmsg {
 			display: none; // wf-activeかつreadyなら非表示
-		***REMOVED***
-	***REMOVED***
+		}
+	}
 </style>
 
 <script>
-import type {PgnLevel***REMOVED*** from "../../../types";
+import type {PgnLevel} from "../../../types";
 import type  UserProfile from "../../../types";
 
 import WebFont from "webfontloader";
@@ -122,14 +122,14 @@ import WebFont from "webfontloader";
 function enableTyping(e: Element, msg?: string) {
 	const el = e as HTMLElement;
 	if (msg) errmsg.textContent = msg;
-	const len = `${el.textContent***REMOVED***`.length + 1;
-	el.style.animation = `typing ${Math.min(1, 0.1 * len)***REMOVED***s steps(${len***REMOVED***), blink .4s step-end infinite alternate`;
-	el.style.width = `${len***REMOVED***ch`;
+	const len = `${el.textContent}`.length + 1;
+	el.style.animation = `typing ${Math.min(1, 0.1 * len)}s steps(${len}), blink .4s step-end infinite alternate`;
+	el.style.width = `${len}ch`;
 	el.addEventListener("animationend", () => {
 		el.style.animation = "none";
 		el.style.borderRight = "none";
-	***REMOVED***);
-***REMOVED***
+	});
+}
 
 const errmsg = document.getElementById("errmsg")!;
 enableTyping(errmsg, "Loading...");
@@ -139,45 +139,45 @@ const data: UserProfile = await fetch("data.json").then((res) => {
 		enableTyping(errmsg, "User Not Found.");
 		errmsg.style.display = "block";
 		return undefined;
-	***REMOVED***
+	}
 	return res.json();
-***REMOVED***);
+});
 
 if (data === undefined) {
 	document.title ="Not Found - PGN Profile";
 	throw new Error("User Not Found.");
-***REMOVED*** else {
-	document.title = `@${data.user.pgrit_id***REMOVED*** - PGN Profile`;
-***REMOVED***
+} else {
+	document.title = `@${data.user.pgrit_id} - PGN Profile`;
+}
 
 WebFont.load({
 	google: {
 		families: ['Jersey 10'],
 		text: "IronBronzeSilverGoldPlatinumDiamondMasterGrandMaster",
-	***REMOVED***
-***REMOVED***);
+	}
+});
 WebFont.load({
 	google: {
 		families: ['Orbitron'],
 		text: "0123456789%",
-	***REMOVED***
-***REMOVED***);
+	}
+});
 
 interface Color<T extends PgnLevel = PgnLevel> {
 	level: T,
 	color: T extends "GrandMaster" ? undefined : string,
 	min:  number,
-***REMOVED***
+}
 
 const colors: Color[] = [
-	{ level: "Iron", color: "#ac9393", min: 0 ***REMOVED***,
-	{ level: "Bronze", color: "#aa4400", min: 500 ***REMOVED***,
-	{ level: "Silver", color: "#a7a7a7", min: 1000 ***REMOVED***,
-	{ level: "Gold", color: "#c8ab37", min: 2500 ***REMOVED***,
-	{ level: "Platinum", color: "black", min: 5000 ***REMOVED***,
-	{ level: "Diamond", color: "#00aad4", min: 10000 ***REMOVED***,
-	{ level: "Master", color: "#6A0DAD", min: 20000 ***REMOVED***,
-	{ level: "GrandMaster", color: undefined, min: 35000 ***REMOVED***,
+	{ level: "Iron", color: "#ac9393", min: 0 },
+	{ level: "Bronze", color: "#aa4400", min: 500 },
+	{ level: "Silver", color: "#a7a7a7", min: 1000 },
+	{ level: "Gold", color: "#c8ab37", min: 2500 },
+	{ level: "Platinum", color: "black", min: 5000 },
+	{ level: "Diamond", color: "#00aad4", min: 10000 },
+	{ level: "Master", color: "#6A0DAD", min: 20000 },
+	{ level: "GrandMaster", color: undefined, min: 35000 },
 ]
 
 async function start() {
@@ -191,20 +191,20 @@ async function start() {
 		circle.setAttribute("value","100");
 		circle.setAttribute("max","100");
 		circle.setAttribute("text-format", "percent");
-	***REMOVED***else {
-		circle.setAttribute("value", `${data.pgn.on_level***REMOVED***`);
-		circle.setAttribute("max", `${data.pgn.level_length***REMOVED***`);
-	***REMOVED***
+	}else {
+		circle.setAttribute("value", `${data.pgn.on_level}`);
+		circle.setAttribute("max", `${data.pgn.level_length}`);
+	}
 
 	const level = document.getElementById("level")!;
 	const color = colors.find((c) => c.level === data.pgn.level)!;
 	if (color.color) {
 		level.style.color = color.color;
-	***REMOVED*** else {
+	} else {
 		level.classList.add("rainbow");
-	***REMOVED***
+	}
 	level.style.opacity = "1";
-	level.textContent = `${data.pgn.level***REMOVED***`;
+	level.textContent = `${data.pgn.level}`;
 
 	document.getElementsByTagName("html")[0]!.classList.add("ready");
 
@@ -225,22 +225,22 @@ async function start() {
 					.toSorted((a, b)=> b.min - a.min)
 					.find((c) => c.min <= v * 28)?.color ?? "#ff5555"),
 				borderWidth: 0,
-			***REMOVED***]
-		***REMOVED***,
+			}]
+		},
 		options: {
 			indexAxis: 'y',
 			plugins: {
 				legend: {
 					display: false,
-				***REMOVED***,
-			***REMOVED***,
+				},
+			},
 			scales: {
 				y: {
 					beginAtZero: true,
-				***REMOVED***,
-			***REMOVED***,
-		***REMOVED***,
-	***REMOVED***);
-***REMOVED***
+				},
+			},
+		},
+	});
+}
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 </script>

@@ -1,6 +1,6 @@
-use std::{fmt::Display, str::FromStr***REMOVED***
+use std::{fmt::Display, str::FromStr};
 
-***REMOVED***DeriveActiveEnum, EnumIter***REMOVED***
+use sea_orm::{DeriveActiveEnum, EnumIter};
 use serde::Serialize;
 
 /// 性別
@@ -11,7 +11,7 @@ pub enum Sex {
     Male,
     #[sea_orm(string_value = "female")]
     Female,
-***REMOVED***
+}
 
 impl FromStr for Sex {
     type Err = String;
@@ -21,19 +21,19 @@ impl FromStr for Sex {
             "男性" => Ok(Sex::Male),
             "女性" => Ok(Sex::Female),
             _ => Err("invalid value".to_string()),
-    ***REMOVED***
-***REMOVED***
-***REMOVED***
+        }
+    }
+}
 
 impl Display for Sex {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{***REMOVED***",
+            "{}",
             match self {
                 Sex::Male => "男性",
                 Sex::Female => "女性",
-        ***REMOVED***
-    ***REMOVED***
-***REMOVED***
-***REMOVED***
+            }
+        )
+    }
+}

@@ -1,6 +1,6 @@
-use std::{fmt::Display, str::FromStr***REMOVED***
+use std::{fmt::Display, str::FromStr};
 
-***REMOVED***DeriveActiveEnum, EnumIter***REMOVED***
+use sea_orm::{DeriveActiveEnum, EnumIter};
 use serde::Serialize;
 
 /// 遂行中の学位
@@ -16,7 +16,7 @@ pub enum Degree {
     /// 博士
     #[sea_orm(string_value = "doctor")]
     Doctor,
-***REMOVED***
+}
 
 impl FromStr for Degree {
     type Err = String;
@@ -27,20 +27,20 @@ impl FromStr for Degree {
             "M" => Ok(Degree::Master),
             "D" => Ok(Degree::Doctor),
             _ => Err("invalid degree step".to_string()),
-    ***REMOVED***
-***REMOVED***
-***REMOVED***
+        }
+    }
+}
 
 impl Display for Degree {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{***REMOVED***",
+            "{}",
             match self {
                 Degree::Bachelor => "B",
                 Degree::Master => "M",
                 Degree::Doctor => "D",
-        ***REMOVED***
-    ***REMOVED***
-***REMOVED***
-***REMOVED***
+            }
+        )
+    }
+}

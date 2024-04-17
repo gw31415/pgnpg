@@ -1,4 +1,4 @@
-use std::{fmt::Display, str::FromStr***REMOVED***
+use std::{fmt::Display, str::FromStr};
 
 use crate::degree::Degree;
 
@@ -9,13 +9,13 @@ pub struct Grade {
     pub degree_step: Degree,
     /// 何年生か
     pub nth: u8,
-***REMOVED***
+}
 
 impl Display for Grade {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{***REMOVED***:{***REMOVED***", self.degree_step, self.nth)
-***REMOVED***
-***REMOVED***
+        write!(f, "{}:{}", self.degree_step, self.nth)
+    }
+}
 
 impl FromStr for Grade {
     type Err = String;
@@ -26,6 +26,6 @@ impl FromStr for Grade {
         Ok(Grade {
             degree_step,
             nth: grade,
-    ***REMOVED***)
-***REMOVED***
-***REMOVED***
+        })
+    }
+}

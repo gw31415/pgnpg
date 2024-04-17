@@ -4,7 +4,7 @@ type numeric = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
  * 日付を表す型
  */
 export type Date = string;
-//`${numeric***REMOVED***${numeric***REMOVED***${numeric***REMOVED***${numeric***REMOVED***-${numeric***REMOVED***${numeric***REMOVED***-${numeric***REMOVED***${numeric***REMOVED***`;
+//`${numeric}${numeric}${numeric}${numeric}-${numeric}${numeric}-${numeric}${numeric}`;
 
 /**
  * ユーザ情報
@@ -15,7 +15,7 @@ export interface User {
 
   /** PGrit ID */
   pgrit_id: string;
-***REMOVED***
+}
 
 /**
  * 性別
@@ -58,7 +58,7 @@ export interface Student {
   slack_id: string;
   /** Discord ID（オプション） */
   discord_id?: string;
-***REMOVED***
+}
 
 /**
  * 取得遂行中の学位
@@ -91,7 +91,7 @@ export interface PgnInfo<T extends PgnLevel = PgnLevel> {
   updated_at: string;
 
   /** 1日ごとのPIX推移 */
-  daily: { [date: Date]: number ***REMOVED***
+  daily: { [date: Date]: number };
 
   /** 現在のPgnLevel */
   level: T;
@@ -113,7 +113,7 @@ export interface PgnInfo<T extends PgnLevel = PgnLevel> {
 
   /** 次のレベルまでに必要な残りのPIX */
   behind_next: T extends "GrandMaster" ? undefined : number;
-***REMOVED***
+}
 
 /**
  * ユーザプロフィール
@@ -133,4 +133,4 @@ export default interface UserProfile {
 
   /** PGN情報 */
   pgn: PgnInfo;
-***REMOVED***
+}

@@ -9,7 +9,7 @@ pub struct Model {
     pub user_id: String,
     #[sea_orm(primary_key)]
     pub refresh_log_id: i64,
-***REMOVED***
+}
 
 #[derive(Clone, Debug, PartialEq, EnumIter, DeriveRelation)]
 pub enum Relation {
@@ -17,14 +17,14 @@ pub enum Relation {
         belongs_to = "super::user::Entity",
         from = "Column::UserId",
         to = "super::user::Column::Id"
-***REMOVED***]
+    )]
     User,
     #[sea_orm(
         belongs_to = "super::refresh_log::Entity",
         from = "Column::RefreshLogId",
         to = "super::refresh_log::Column::Id"
-***REMOVED***]
+    )]
     RefreshLog,
-***REMOVED***
+}
 
-impl ActiveModelBehavior for ActiveModel {***REMOVED***
+impl ActiveModelBehavior for ActiveModel {}

@@ -1,21 +1,21 @@
 mod usecase;
 
-use std::{collections::HashSet, path::PathBuf***REMOVED***
+use std::{collections::HashSet, path::PathBuf, sync::Arc};
 
 use axum::{
     extract::Path,
     http::StatusCode,
     response::IntoResponse,
-    routing::{any, get***REMOVED***,
+    routing::{any, get},
     Router,
-***REMOVED***
+};
 use reqwest::header;
 use sea_orm::DatabaseConnection;
 use serde::Serialize;
 use tower_http::{
     compression::CompressionLayer,
-    services::{ServeDir, ServeFile***REMOVED***,
-***REMOVED***
+    services::{ServeDir, ServeFile},
+};
 use usecase::profile;
 
 use crate::usecase::get_last_updated_at;
@@ -28,18 +28,18 @@ static RUNNING_REFRESH: std::sync::atomic::AtomicBool = std::sync::atomic::Atomi
 fn json(content: impl Serialize) -> impl IntoResponse {
     (
         StatusCode::OK,
-***REMOVED***(header::CONTENT_TYPE, "application/json; charset=utf-8")],
+        [(header::CONTENT_TYPE, "application/json; charset=utf-8")],
         serde_json::to_string(&content).unwrap(),
-***REMOVED***
-***REMOVED***
+    )
+}
 
 /// Spawnされる更新処理タスク
-async fn refresh(db: &DatabaseConnection) {
+async fn refresh(db: &DatabaseConnection, fetch_url: &str) {
     if RUNNING_REFRESH.load(std::sync::atomic::Ordering::Relaxed) {
         return;
-***REMOVED*** else {
+    } else {
         RUNNING_REFRESH.store(true, std::sync::atomic::Ordering::Relaxed);
-***REMOVED***
+    }
 
     let now = chrono::Utc::now();
 
@@ -53,7 +53,7 @@ async fn refresh(db: &DatabaseConnection) {
         if now - last_datetime < chrono::Duration::minutes(30) {
             RUNNING_REFRESH.store(false, std::sync::atomic::Ordering::Relaxed);
             return;
-    ***REMOVED***
+        }
 
         // 更新されているユーザの数を数える
         active_users_pre = usecase::active_users(db).await.unwrap();
@@ -63,41 +63,48 @@ async fn refresh(db: &DatabaseConnection) {
             .succ_opt()
             .unwrap()
             .min(end - chrono::Duration::days(1))
-***REMOVED*** else {
+    } else {
         end - chrono::Duration::days(DAYS_COUNT - 1)
-    ***REMOVED***
+    };
 
     // データを取得
-    let mut records = usecase::fetch(start, end).await.unwrap();
+    let mut records = usecase::fetch(fetch_url, start, end).await.unwrap();
 
     // 十分性の確認(新しいユーザがいた場合は再度取得)
     if let Some(active_users_pre) = active_users_pre {
         let active_users_post: HashSet<_> =
             records.iter().map(|r| r.wallet_address.clone()).collect();
         if active_users_pre
-***REMOVED***
+            .into_iter()
             .map(|u| u.id)
             .collect::<HashSet<_>>()
             != active_users_post
         {
-            records = usecase::fetch(end - chrono::Duration::days(DAYS_COUNT - 1), end)
-        ***REMOVED***
-            ***REMOVED***
-    ***REMOVED***
-***REMOVED***
+            records = usecase::fetch(fetch_url, end - chrono::Duration::days(DAYS_COUNT - 1), end)
+                .await
+                .unwrap();
+        }
+    }
 
     usecase::insert(db, now, records).await.unwrap();
 
     RUNNING_REFRESH.store(false, std::sync::atomic::Ordering::Relaxed);
-***REMOVED***
+}
 
 pub struct RunServerConfig {
     pub db: DatabaseConnection,
     pub static_dir: PathBuf,
-***REMOVED***
+    pub fetch_url: Arc<str>,
+}
 
 /// Start the server
-pub async fn run_server(RunServerConfig { db, static_dir ***REMOVED***: RunServerConfig) {
+pub async fn run_server(
+    RunServerConfig {
+        db,
+        static_dir,
+        fetch_url,
+    }: RunServerConfig,
+) {
     static NOT_FOUND: (StatusCode, &str) = (StatusCode::NOT_FOUND, "Not found");
     static INTERNAL_SERVER_ERROR: (StatusCode, &str) =
         (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error");
@@ -108,11 +115,11 @@ pub async fn run_server(RunServerConfig { db, static_dir ***REMOVED***: RunServe
             let users = usecase::active_users(&db).await.unwrap();
             if let Some(users) = users {
                 Ok(json(users))
-        ***REMOVED*** else {
+            } else {
                 Err(NOT_FOUND)
-        ***REMOVED***
-    ***REMOVED***
-***REMOVED***);
+            }
+        }
+    });
     let profile = get({
         let db = db.clone();
         |Path(pgrit_id): Path<String>| async move {
@@ -121,25 +128,25 @@ pub async fn run_server(RunServerConfig { db, static_dir ***REMOVED***: RunServe
                 Ok(Some(profile)) => Ok(json(profile)),
                 Ok(None) => Err(NOT_FOUND),
                 Err(e) => {
-                    eprintln!("{:?***REMOVED***", e);
+                    eprintln!("{:?}", e);
                     Err(INTERNAL_SERVER_ERROR)
-            ***REMOVED***
-        ***REMOVED***
-    ***REMOVED***
-***REMOVED***);
+                }
+            }
+        }
+    });
     let refresh = get({
         let db = db.clone();
         || async move {
             if RUNNING_REFRESH.load(std::sync::atomic::Ordering::Relaxed) {
                 (StatusCode::TOO_MANY_REQUESTS, "Already running")
-        ***REMOVED*** else {
+            } else {
                 tokio::spawn(async move {
-                    refresh(&db.clone()).await;
-            ***REMOVED***);
+                    refresh(&db.clone(), &fetch_url.clone()).await;
+                });
                 (StatusCode::OK, "Refresh started")
-        ***REMOVED***
-    ***REMOVED***
-***REMOVED***);
+            }
+        }
+    });
     let health_check = get("OK");
 
     let app = Router::new()
@@ -148,25 +155,25 @@ pub async fn run_server(RunServerConfig { db, static_dir ***REMOVED***: RunServe
             Router::new()
                 .route("/", health_check.clone())
                 .route("/actives.json", active_users)
-                .route("/profile/pgrit/:pgrit_id/data.json", profile.clone()) // <- 暫定, 本当は /profile/{pgrit_id***REMOVED***.json にしたい
+                .route("/profile/pgrit/:pgrit_id/data.json", profile.clone()) // <- 暫定, 本当は /profile/{pgrit_id}.json にしたい
                 .route("/refresh/", refresh),
-    ***REMOVED***
+        )
         .nest(
             "/profile/:pgrid_id/",
             Router::new()
                 .route_service(
                     "/",
                     ServeFile::new(static_dir.join("profile/name/index.html")),
-            ***REMOVED***
+                )
                 .route("/data.json", profile),
-    ***REMOVED***
+        )
         .nest_service(
             "/",
             ServeDir::new(static_dir).not_found_service(any(NOT_FOUND)),
-    ***REMOVED***
+        )
         .layer(CompressionLayer::new())
         .fallback(NOT_FOUND);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3232").await.unwrap();
     axum::serve(listener, app).await.unwrap();
-***REMOVED***
+}

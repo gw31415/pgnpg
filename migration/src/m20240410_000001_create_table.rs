@@ -1,4 +1,4 @@
-***REMOVED***pix, refresh_log, refreshed_users, student, user***REMOVED***
+use entity::{pix, refresh_log, refreshed_users, student, user};
 use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
@@ -17,16 +17,16 @@ impl MigrationTrait for Migration {
                             .string()
                             .not_null()
                             .primary_key(),
-                ***REMOVED***
+                    )
                     .col(
                         ColumnDef::new(user::Column::PgritId)
                             .unique_key()
                             .string()
                             .not_null(),
-                ***REMOVED***
-***REMOVED***
-        ***REMOVED***
-    ***REMOVED***?;
+                    )
+                    .to_owned(),
+            )
+            .await?;
         manager
             .create_table(
                 Table::create()
@@ -37,17 +37,17 @@ impl MigrationTrait for Migration {
                             .string()
                             .not_null()
                             .primary_key(),
-                ***REMOVED***
+                    )
                     .col(
                         ColumnDef::new(student::Column::DegreeStep)
                             .string()
                             .not_null(),
-                ***REMOVED***
+                    )
                     .col(
                         ColumnDef::new(student::Column::Grade)
                             .small_unsigned()
                             .not_null(),
-                ***REMOVED***
+                    )
                     .col(ColumnDef::new(student::Column::Course).string().not_null())
                     .col(ColumnDef::new(student::Column::Level).string().not_null())
                     .col(ColumnDef::new(student::Column::Sex).string().not_null())
@@ -58,20 +58,20 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(student::Column::EmailOf4nonome)
                             .string()
                             .not_null(),
-                ***REMOVED***
+                    )
                     .col(
                         ColumnDef::new(student::Column::University)
                             .string()
                             .not_null(),
-                ***REMOVED***
+                    )
                     .col(ColumnDef::new(student::Column::Major).string().not_null())
                     .col(ColumnDef::new(student::Column::LeaveDate).date().null())
                     .col(ColumnDef::new(student::Column::Active).boolean().not_null())
                     .col(ColumnDef::new(student::Column::SlackId).string().not_null())
                     .col(ColumnDef::new(student::Column::DiscordId).string().null())
-***REMOVED***
-        ***REMOVED***
-    ***REMOVED***?;
+                    .to_owned(),
+            )
+            .await?;
         manager
             .create_table(
                 Table::create()
@@ -81,16 +81,16 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(refreshed_users::Column::UserId)
                             .string()
                             .not_null(),
-                ***REMOVED***
+                    )
                     .col(ColumnDef::new(refreshed_users::Column::RefreshLogId).not_null())
                     .primary_key(
                         Index::create()
                             .col(refreshed_users::Column::UserId)
                             .col(refreshed_users::Column::RefreshLogId),
-                ***REMOVED***
-***REMOVED***
-        ***REMOVED***
-    ***REMOVED***?;
+                    )
+                    .to_owned(),
+            )
+            .await?;
         manager
             .create_table(
                 Table::create()
@@ -102,16 +102,16 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .not_null()
                             .primary_key(),
-                ***REMOVED***
+                    )
                     .col(
                         ColumnDef::new(refresh_log::Column::UpdatedAt)
                             .date_time()
                             .unique_key()
                             .not_null(),
-                ***REMOVED***
-***REMOVED***
-        ***REMOVED***
-    ***REMOVED***?;
+                    )
+                    .to_owned(),
+            )
+            .await?;
         manager
             .create_table(
                 Table::create()
@@ -124,29 +124,29 @@ impl MigrationTrait for Migration {
                         Index::create()
                             .col(pix::Column::UserId)
                             .col(pix::Column::Date),
-                ***REMOVED***
-***REMOVED***
-        ***REMOVED***
-    ***REMOVED***?;
-    ***REMOVED***
-***REMOVED***
+                    )
+                    .to_owned(),
+            )
+            .await?;
+        Ok(())
+    }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager
             .drop_table(Table::drop().table(user::Entity).to_owned())
-    ***REMOVED***?;
+            .await?;
         manager
             .drop_table(Table::drop().table(student::Entity).to_owned())
-    ***REMOVED***?;
+            .await?;
         manager
             .drop_table(Table::drop().table(refreshed_users::Entity).to_owned())
-    ***REMOVED***?;
+            .await?;
         manager
             .drop_table(Table::drop().table(refresh_log::Entity).to_owned())
-    ***REMOVED***?;
+            .await?;
         manager
             .drop_table(Table::drop().table(pix::Entity).to_owned())
-    ***REMOVED***?;
-    ***REMOVED***
-***REMOVED***
-***REMOVED***
+            .await?;
+        Ok(())
+    }
+}

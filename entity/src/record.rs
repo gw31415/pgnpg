@@ -1,9 +1,9 @@
-use chrono::{DateTime, NaiveDate***REMOVED***
-use serde::{Deserialize, Deserializer***REMOVED***
-use serde_with::{serde_as, DisplayFromStr, NoneAsEmptyString***REMOVED***
-***REMOVED***
+use chrono::{DateTime, NaiveDate};
+use serde::{Deserialize, Deserializer};
+use serde_with::{serde_as, DisplayFromStr, NoneAsEmptyString};
+use std::collections::HashMap;
 
-use crate::{grade::Grade, level::Level, sex::Sex***REMOVED***
+use crate::{grade::Grade, level::Level, sex::Sex};
 
 /// APIから取得したレコード
 #[serde_as]
@@ -36,7 +36,7 @@ pub struct Record {
         default,
         rename = "joinDate",
         deserialize_with = "deserialize_optional_naive_date"
-***REMOVED***]
+    )]
     pub join_date: Option<NaiveDate>,
 
     /// 加入月
@@ -64,7 +64,7 @@ pub struct Record {
         default,
         rename = "leaveDate",
         deserialize_with = "deserialize_optional_naive_date"
-***REMOVED***]
+    )]
     pub leave_date: Option<NaiveDate>,
 
     /// アクティブかどうか
@@ -97,7 +97,7 @@ pub struct Record {
     /// 日毎のPIXの内訳
     #[serde(flatten, deserialize_with = "deserialize_date_map")]
     pub daily_totals: HashMap<NaiveDate, u32>,
-***REMOVED***
+}
 
 fn deserialize_optional_naive_date<'de, D>(deserializer: D) -> Result<Option<NaiveDate>, D::Error>
 where
@@ -114,19 +114,19 @@ where
                     && [&s[0..4], &s[5..7], &s[8..10]]
                         .iter()
                         .all(|s| s.chars().all(|c| c.is_ascii_digit()))
-            ***REMOVED***
+            };
             Ok(Some(
                 if res {
                     NaiveDate::parse_from_str(&s[0..10], "%Y-%m-%d")
-            ***REMOVED*** else {
+                } else {
                     DateTime::parse_from_rfc3339(&s).map(|d| d.date_naive())
-            ***REMOVED***
+                }
                 .map_err(serde::de::Error::custom)?,
-        ***REMOVED***)
-    ***REMOVED***
+            ))
+        }
         _ => Ok(None),
-***REMOVED***
-***REMOVED***
+    }
+}
 
 fn deserialize_date_map<'de, D>(deserializer: D) -> Result<HashMap<NaiveDate, u32>, D::Error>
 where
@@ -138,6 +138,6 @@ where
             NaiveDate::parse_from_str(&k, "%Y-%m-%d")
                 .map_err(serde::de::Error::custom)
                 .map(|date| (date, v))
-    ***REMOVED***)
+        })
         .collect()
-***REMOVED***
+}

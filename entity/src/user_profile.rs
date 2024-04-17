@@ -1,10 +1,10 @@
-***REMOVED***
+use std::collections::HashMap;
 
 use crate::pgn_level::PgnLevel;
 
 use super::student::Model as Student;
 use super::user::Model as User;
-***REMOVED***
+use chrono::NaiveDate;
 use sea_orm::prelude::DateTimeUtc;
 use serde::Serialize;
 use serde_with::serde_as;
@@ -23,7 +23,7 @@ pub struct UserProfile {
 
     /// PGN情報
     pub pgn: PgnInfo,
-***REMOVED***
+}
 
 #[serde_as]
 #[derive(Debug, Clone, Serialize)]
@@ -56,4 +56,4 @@ pub struct PgnInfo {
 
     /// 次のレベルまでに必要な残りのPIX
     pub behind_next: Option<u32>,
-***REMOVED***
+}

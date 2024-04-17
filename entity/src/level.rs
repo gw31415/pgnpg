@@ -1,6 +1,6 @@
-use std::{fmt::Display, str::FromStr***REMOVED***
+use std::{fmt::Display, str::FromStr};
 
-***REMOVED***DeriveActiveEnum, EnumIter***REMOVED***
+use sea_orm::{DeriveActiveEnum, EnumIter};
 use serde::Serialize;
 
 /// 学生レベル
@@ -15,7 +15,7 @@ pub enum Level {
     Normal,
     #[sea_orm(string_value = "lead")]
     Lead,
-***REMOVED***
+}
 
 impl FromStr for Level {
     type Err = String;
@@ -27,21 +27,21 @@ impl FromStr for Level {
             "ノーマル" => Ok(Level::Normal),
             "リード" => Ok(Level::Lead),
             _ => Err("invalid value".to_string()),
-    ***REMOVED***
-***REMOVED***
-***REMOVED***
+        }
+    }
+}
 
 impl Display for Level {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{***REMOVED***",
+            "{}",
             match self {
                 Level::Newbie => "新人",
                 Level::Assistant => "アシスタント",
                 Level::Normal => "ノーマル",
                 Level::Lead => "リード",
-        ***REMOVED***
-    ***REMOVED***
-***REMOVED***
-***REMOVED***
+            }
+        )
+    }
+}

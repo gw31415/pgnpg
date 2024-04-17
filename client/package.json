@@ -8,7 +8,7 @@
 		"build": "astro check && astro build",
 		"preview": "astro preview",
 		"astro": "astro"
-	***REMOVED***,
+	},
 	"dependencies": {
 		"@astrojs/check": "^0.5.10",
 		"@astrojs/solid-js": "^4.1.0",
@@ -19,8 +19,8 @@
 		"solid-js": "^1.8.16",
 		"typescript": "^5.4.5",
 		"webfontloader": "^1.6.28"
-	***REMOVED***,
+	},
 	"devDependencies": {
 		"@types/webfontloader": "^1.6.38"
-	***REMOVED***
-***REMOVED***
+	}
+}
