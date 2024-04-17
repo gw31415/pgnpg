@@ -46,7 +46,7 @@ async fn refresh(db: &DatabaseConnection, fetch_url: &str) {
     let mut active_users_pre: Option<_> = None;
 
     // 最初に最低限必要な日付を取得
-    let end = now.date_naive();
+    let end = now.naive_local().date();
     // 最低一日は取得
     let start = if let Some(last_datetime) = get_last_updated_at(db).await.unwrap() {
         // 30分以上の間隔がない場合は中止
@@ -59,7 +59,8 @@ async fn refresh(db: &DatabaseConnection, fetch_url: &str) {
         active_users_pre = usecase::active_users(db).await.unwrap();
 
         last_datetime
-            .date_naive()
+            .naive_local()
+            .date()
             .succ_opt()
             .unwrap()
             .min(end - chrono::Duration::days(1))
@@ -86,7 +87,7 @@ async fn refresh(db: &DatabaseConnection, fetch_url: &str) {
         }
     }
 
-    usecase::insert(db, now, records).await.unwrap();
+    usecase::insert(db, chrono::Utc::now(), records).await.unwrap();
 
     RUNNING_REFRESH.store(false, std::sync::atomic::Ordering::Relaxed);
 }
