@@ -122,20 +122,21 @@ pub async fn profile(
 pub async fn active_users(db: &DatabaseConnection) -> Result<Option<Vec<user::Model>>, Error> {
     let Some(refresh_log_item) = refreshed_users::Entity::find()
         .order_by_desc(refreshed_users::Column::Ulid)
-        .limit(1)
+        .column(refreshed_users::Column::Ulid)
         .one(db)
         .await?
     else {
         return Ok(None);
     };
 
+    let log_id = refresh_log_item.ulid;
+
     let users = user::Entity::find()
-        .find_with_related(refreshed_users::Entity)
-        .filter(refreshed_users::Column::Ulid.eq(refresh_log_item.ulid))
+        .join(sea_orm::JoinType::LeftJoin, refreshed_users::Relation::User.def().rev())
+        .filter(refreshed_users::Column::Ulid.eq(log_id))
         .all(db)
         .await?
         .into_iter()
-        .map(|i| i.0)
         .collect_vec();
 
     Ok(Some(users))
@@ -144,7 +145,7 @@ pub async fn active_users(db: &DatabaseConnection) -> Result<Option<Vec<user::Mo
 pub async fn get_last_updated_at(db: &DatabaseConnection) -> Result<Option<DateTimeUtc>, Error> {
     let model = refreshed_users::Entity::find()
         .order_by_desc(refreshed_users::Column::Ulid)
-        .columns([refreshed_users::Column::Ulid])
+        .column(refreshed_users::Column::Ulid)
         .one(db)
         .await?;
     let Some(model) = model else {
