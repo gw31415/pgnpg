@@ -1,4 +1,4 @@
-use entity::{pix, refresh_log, refreshed_users, student, user};
+use entity::{pix, refreshed_users, student, user};
 use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
@@ -12,12 +12,7 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(user::Entity)
                     .if_not_exists()
-                    .col(
-                        ColumnDef::new(user::Column::Id)
-                            .string()
-                            .not_null()
-                            .primary_key(),
-                    )
+                    .col(ColumnDef::new(user::Column::Id).string().primary_key())
                     .col(
                         ColumnDef::new(user::Column::PgritId)
                             .unique_key()
@@ -35,7 +30,6 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(student::Column::UserId)
                             .string()
-                            .not_null()
                             .primary_key(),
                     )
                     .col(
@@ -82,32 +76,11 @@ impl MigrationTrait for Migration {
                             .string()
                             .not_null(),
                     )
-                    .col(ColumnDef::new(refreshed_users::Column::RefreshLogId).not_null())
+                    .col(ColumnDef::new(refreshed_users::Column::Ulid).not_null())
                     .primary_key(
                         Index::create()
                             .col(refreshed_users::Column::UserId)
-                            .col(refreshed_users::Column::RefreshLogId),
-                    )
-                    .to_owned(),
-            )
-            .await?;
-        manager
-            .create_table(
-                Table::create()
-                    .table(refresh_log::Entity)
-                    .if_not_exists()
-                    .col(
-                        ColumnDef::new(refresh_log::Column::Id)
-                            .integer()
-                            .auto_increment()
-                            .not_null()
-                            .primary_key(),
-                    )
-                    .col(
-                        ColumnDef::new(refresh_log::Column::UpdatedAt)
-                            .date_time()
-                            .unique_key()
-                            .not_null(),
+                            .col(refreshed_users::Column::Ulid),
                     )
                     .to_owned(),
             )
@@ -140,9 +113,6 @@ impl MigrationTrait for Migration {
             .await?;
         manager
             .drop_table(Table::drop().table(refreshed_users::Entity).to_owned())
-            .await?;
-        manager
-            .drop_table(Table::drop().table(refresh_log::Entity).to_owned())
             .await?;
         manager
             .drop_table(Table::drop().table(pix::Entity).to_owned())

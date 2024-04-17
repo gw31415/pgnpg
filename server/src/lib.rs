@@ -87,7 +87,9 @@ async fn refresh(db: &DatabaseConnection, fetch_url: &str) {
         }
     }
 
-    usecase::insert(db, chrono::Utc::now(), records).await.unwrap();
+    usecase::insert(db, chrono::Utc::now(), records)
+        .await
+        .unwrap();
 
     RUNNING_REFRESH.store(false, std::sync::atomic::Ordering::Relaxed);
 }

@@ -8,7 +8,7 @@ use entity::{
     pgn_level::{self, PgnLevel},
     pix,
     record::Record,
-    refresh_log, refreshed_users, student, user,
+    refreshed_users, student, user,
     user_profile::{PgnInfo, UserProfile},
 };
 use itertools::Itertools;
@@ -17,6 +17,7 @@ use sea_orm::{
     prelude::DateTimeUtc, sea_query::OnConflict, ActiveValue, ColumnTrait, DatabaseConnection,
     EntityTrait, QueryFilter, QueryOrder, QuerySelect, RelationTrait, TransactionTrait,
 };
+use ulid::Ulid;
 
 const CHUNK_SIZE: usize = 512;
 
@@ -119,8 +120,8 @@ pub async fn profile(
 }
 
 pub async fn active_users(db: &DatabaseConnection) -> Result<Option<Vec<user::Model>>, Error> {
-    let Some(refresh_log_item) = refresh_log::Entity::find()
-        .order_by_desc(refresh_log::Column::UpdatedAt)
+    let Some(refresh_log_item) = refreshed_users::Entity::find()
+        .order_by_desc(refreshed_users::Column::Ulid)
         .limit(1)
         .one(db)
         .await?
@@ -129,8 +130,8 @@ pub async fn active_users(db: &DatabaseConnection) -> Result<Option<Vec<user::Mo
     };
 
     let users = user::Entity::find()
-        .find_with_related(refresh_log::Entity)
-        .filter(refreshed_users::Column::RefreshLogId.eq(refresh_log_item.id))
+        .find_with_related(refreshed_users::Entity)
+        .filter(refreshed_users::Column::Ulid.eq(refresh_log_item.ulid))
         .all(db)
         .await?
         .into_iter()
@@ -141,13 +142,19 @@ pub async fn active_users(db: &DatabaseConnection) -> Result<Option<Vec<user::Mo
 }
 
 pub async fn get_last_updated_at(db: &DatabaseConnection) -> Result<Option<DateTimeUtc>, Error> {
-    let model = refresh_log::Entity::find()
-        .select_only()
-        .order_by_desc(refresh_log::Column::UpdatedAt)
-        .columns([refresh_log::Column::Id, refresh_log::Column::UpdatedAt])
+    let model = refreshed_users::Entity::find()
+        .order_by_desc(refreshed_users::Column::Ulid)
+        .columns([refreshed_users::Column::Ulid])
         .one(db)
         .await?;
-    Ok(model.map(|m| m.updated_at))
+    let Some(model) = model else {
+        return Ok(None);
+    };
+    let systemtime = Ulid::from_string(&model.ulid)
+        .context("parse error")?
+        .datetime();
+    let datetime = DateTimeUtc::from(systemtime);
+    Ok(Some(datetime))
 }
 
 fn create_student_activemodel(record: Record) -> Option<student::ActiveModel> {
@@ -177,11 +184,7 @@ pub async fn insert(
     now: DateTimeUtc,
     records: impl IntoIterator<Item = Record>,
 ) -> Result<(), Error> {
-    let log = refresh_log::ActiveModel {
-        updated_at: ActiveValue::Set(now),
-        ..Default::default()
-    };
-
+    let log_id = Ulid::from_datetime(now.into()).to_string();
     let mut users = Vec::new();
     let mut refreshed_user_item = Vec::new();
     let mut pixes = Vec::new();
@@ -196,7 +199,7 @@ pub async fn insert(
         };
         let tb = refreshed_users::ActiveModel {
             user_id: ActiveValue::Set(record.wallet_address.clone()),
-            ..Default::default()
+            ulid: ActiveValue::Set(log_id.clone()),
         };
         let pix = record
             .daily_totals
@@ -213,13 +216,6 @@ pub async fn insert(
 
     db.transaction(|db| {
         Box::pin(async move {
-            let log_insert_res = refresh_log::Entity::insert(log).exec(db).await?;
-            {
-                let log_id = log_insert_res.last_insert_id;
-                for item in refreshed_user_item.iter_mut() {
-                    item.refresh_log_id = ActiveValue::Set(log_id);
-                }
-            }
             user::Entity::insert_many(users)
                 .on_conflict(
                     OnConflict::column(user::Column::Id)
@@ -258,7 +254,7 @@ pub async fn insert(
                 .on_conflict(
                     OnConflict::columns([
                         refreshed_users::Column::UserId,
-                        refreshed_users::Column::RefreshLogId,
+                        refreshed_users::Column::Ulid,
                     ])
                     .do_nothing()
                     .to_owned(),

@@ -16,3 +16,4 @@ reqwest = "0.12.3"
 itertools = "0.12.1"
 serde = "1.0.197"
 tower-http = { version = "0.5.2", features = ["fs", "compression-full"] }
+ulid = "1.1.2"

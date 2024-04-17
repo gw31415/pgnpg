@@ -1,4 +1,5 @@
-//! RefreshLogとUserの中間テーブル: そのリフレッシュ時にどのユーザがリフレッシュされたかを記録する
+//! RefreshされたUserを記録するテーブル: ulidが1回のリフレッシュに対応する。
+//! リフレッシュ時にどのユーザがリフレッシュされたかを記録する
 
 use sea_orm::entity::prelude::*;
 
@@ -6,9 +7,9 @@ use sea_orm::entity::prelude::*;
 #[sea_orm(table_name = "refreshed_users")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    pub user_id: String,
+    pub ulid: String,
     #[sea_orm(primary_key)]
-    pub refresh_log_id: i64,
+    pub user_id: String,
 }
 
 #[derive(Clone, Debug, PartialEq, EnumIter, DeriveRelation)]
@@ -19,12 +20,6 @@ pub enum Relation {
         to = "super::user::Column::Id"
     )]
     User,
-    #[sea_orm(
-        belongs_to = "super::refresh_log::Entity",
-        from = "Column::RefreshLogId",
-        to = "super::refresh_log::Column::Id"
-    )]
-    RefreshLog,
 }
 
 impl ActiveModelBehavior for ActiveModel {}

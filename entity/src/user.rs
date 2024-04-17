@@ -16,27 +16,33 @@ pub struct Model {
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     /// 生徒情報, 1対1 (or 1対0)
-    #[sea_orm(
-        belongs_to = "super::student::Entity",
-        from = "Column::Id",
-        to = "super::student::Column::UserId"
-    )]
+    #[sea_orm(has_one = "super::student::Entity")]
     Student,
-}
 
-impl Related<super::refresh_log::Entity> for Entity {
-    fn to() -> RelationDef {
-        super::refreshed_users::Relation::RefreshLog.def()
-    }
-
-    fn via() -> Option<RelationDef> {
-        Some(super::refreshed_users::Relation::User.def().rev())
-    }
+    /// Mastodonトークン, 1対1 (or 1対0)
+    #[sea_orm(has_one = "super::mstdn_token::Entity")]
+    MstdnToken,
 }
 
 impl Related<super::student::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Student.def()
+    }
+}
+
+impl Related<super::mstdn_token::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::MstdnToken.def()
+    }
+}
+
+impl Related<super::refreshed_users::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::refreshed_users::Relation::User.def().rev()
+    }
+
+    fn via() -> Option<RelationDef> {
+        Some(super::refreshed_users::Relation::User.def().rev())
     }
 }
 
