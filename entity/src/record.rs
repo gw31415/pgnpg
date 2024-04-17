@@ -106,6 +106,9 @@ where
     let s: Result<Option<String>, _> = Option::deserialize(deserializer);
     match s? {
         Some(s) if !s.is_empty() => {
+            if let Ok(date) = DateTime::parse_from_rfc3339(&s) {
+                return Ok(Some(date.with_timezone(&chrono::Local).date_naive()));
+            }
             let res = {
                 let s = s.as_str();
                 s.len() >= 10
@@ -115,14 +118,14 @@ where
                         .iter()
                         .all(|s| s.chars().all(|c| c.is_ascii_digit()))
             };
-            Ok(Some(
-                if res {
+            if res {
+                Ok(Some(
                     NaiveDate::parse_from_str(&s[0..10], "%Y-%m-%d")
-                } else {
-                    DateTime::parse_from_rfc3339(&s).map(|d| d.date_naive())
-                }
-                .map_err(serde::de::Error::custom)?,
-            ))
+                        .map_err(serde::de::Error::custom)?,
+                ))
+            } else {
+                Err(serde::de::Error::custom("invalid date format"))
+            }
         }
         _ => Ok(None),
     }
