@@ -1,6 +1,5 @@
 use std::{path::PathBuf, sync::Arc};
 
-use api::run_server;
 use migration::{Migrator, MigratorTrait};
 use sea_orm::{ConnectOptions, Database};
 use serde::Deserialize;
@@ -33,7 +32,7 @@ async fn main() -> Result<(), Error> {
     Migrator::up(&db, None).await?;
 
     // Run the server
-    run_server(api::RunServerConfig {
+    server::run(server::Config {
         db,
         static_dir: env.static_dir,
         fetch_url: env.fetch_url,

@@ -91,19 +91,19 @@ async fn refresh(db: &DatabaseConnection, fetch_url: &str) {
     RUNNING_REFRESH.store(false, std::sync::atomic::Ordering::Relaxed);
 }
 
-pub struct RunServerConfig {
+pub struct Config {
     pub db: DatabaseConnection,
     pub static_dir: PathBuf,
     pub fetch_url: Arc<str>,
 }
 
 /// Start the server
-pub async fn run_server(
-    RunServerConfig {
+pub async fn run(
+    Config {
         db,
         static_dir,
         fetch_url,
-    }: RunServerConfig,
+    }: Config,
 ) {
     static NOT_FOUND: (StatusCode, &str) = (StatusCode::NOT_FOUND, "Not found");
     static INTERNAL_SERVER_ERROR: (StatusCode, &str) =
