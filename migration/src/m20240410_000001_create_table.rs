@@ -1,4 +1,4 @@
-use entity::{pix, refreshed_users, student, user};
+use entity::{mstdn_token, pix, refreshed_users, student, user};
 use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
@@ -101,6 +101,25 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await?;
+        manager
+            .create_table(
+                Table::create()
+                    .table(mstdn_token::Entity)
+                    .if_not_exists()
+                    .col(
+                        ColumnDef::new(mstdn_token::Column::UserId)
+                            .string()
+                            .primary_key(),
+                    )
+                    .col(
+                        ColumnDef::new(mstdn_token::Column::Token)
+                            .string()
+                            .unique_key()
+                            .not_null(),
+                    )
+                    .to_owned(),
+            )
+            .await?;
         Ok(())
     }
 
@@ -116,6 +135,9 @@ impl MigrationTrait for Migration {
             .await?;
         manager
             .drop_table(Table::drop().table(pix::Entity).to_owned())
+            .await?;
+        manager
+            .drop_table(Table::drop().table(mstdn_token::Entity).to_owned())
             .await?;
         Ok(())
     }
