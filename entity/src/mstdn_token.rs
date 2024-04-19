@@ -9,8 +9,10 @@ pub struct Model {
     #[sea_orm(primary_key)]
     /// Ethereumのウォレットアドレス
     pub user_id: String,
+    /// Authorization Code
+    pub authorization_code: String,
     /// Mastodonトークン
-    pub token: String,
+    pub access_token: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

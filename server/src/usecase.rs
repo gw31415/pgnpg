@@ -1,10 +1,12 @@
 use std::collections::HashMap;
 
 use anyhow::Context;
+use axum::http::HeaderValue;
 use chrono::NaiveDate;
 use entity::{
     error::Error,
     grade::Grade,
+    mstdn_token,
     pgn_level::{self, PgnLevel},
     pix,
     record::Record,
@@ -12,12 +14,14 @@ use entity::{
     user_profile::{PgnInfo, UserProfile},
 };
 use itertools::Itertools;
-use reqwest::Url;
+use reqwest::{header, Url};
 use sea_orm::{
     prelude::DateTimeUtc, sea_query::OnConflict, ActiveValue, ColumnTrait, DatabaseConnection,
     EntityTrait, QueryFilter, QueryOrder, QuerySelect, RelationTrait, TransactionTrait,
 };
+use serde_json::Value;
 use ulid::Ulid;
+use valq::query_value;
 
 const CHUNK_SIZE: usize = 512;
 
@@ -121,8 +125,8 @@ pub async fn profile(
 
 pub async fn active_users(db: &DatabaseConnection) -> Result<Option<Vec<user::Model>>, Error> {
     let Some(refresh_log_item) = refreshed_users::Entity::find()
-        .order_by_desc(refreshed_users::Column::Ulid)
         .column(refreshed_users::Column::Ulid)
+        .order_by_desc(refreshed_users::Column::Ulid)
         .one(db)
         .await?
     else {
@@ -132,7 +136,10 @@ pub async fn active_users(db: &DatabaseConnection) -> Result<Option<Vec<user::Mo
     let log_id = refresh_log_item.ulid;
 
     let users = user::Entity::find()
-        .join(sea_orm::JoinType::LeftJoin, refreshed_users::Relation::User.def().rev())
+        .join(
+            sea_orm::JoinType::LeftJoin,
+            refreshed_users::Relation::User.def().rev(),
+        )
         .filter(refreshed_users::Column::Ulid.eq(log_id))
         .all(db)
         .await?
@@ -144,8 +151,8 @@ pub async fn active_users(db: &DatabaseConnection) -> Result<Option<Vec<user::Mo
 
 pub async fn get_last_updated_at(db: &DatabaseConnection) -> Result<Option<DateTimeUtc>, Error> {
     let model = refreshed_users::Entity::find()
-        .order_by_desc(refreshed_users::Column::Ulid)
         .column(refreshed_users::Column::Ulid)
+        .order_by_desc(refreshed_users::Column::Ulid)
         .one(db)
         .await?;
     let Some(model) = model else {
@@ -178,6 +185,101 @@ fn create_student_activemodel(record: Record) -> Option<student::ActiveModel> {
         slack_id: ActiveValue::Set(record.slack_id?),
         discord_id: ActiveValue::Set(record.discord_id),
     })
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum SignupError {
+    #[error("User not found")]
+    UserNotFound,
+    #[error(transparent)]
+    InternalServerError(#[from] anyhow::Error),
+    #[error(transparent)]
+    ReqwestError(#[from] reqwest::Error),
+    #[error(transparent)]
+    ConvertError(#[from] std::convert::Infallible),
+    #[error(transparent)]
+    SerdeError(#[from] serde_json::Error),
+    #[error(transparent)]
+    SeaOrmError(#[from] sea_orm::error::DbErr),
+}
+
+pub async fn signup(
+    db: &DatabaseConnection,
+    pgrit_origin: &str,
+    callback_url_ours: &str,
+    account_verify_url: &str,
+    pgrit_client_key: &str,
+    pgrit_client_secret: &str,
+    code: &str,
+) -> Result<String, SignupError> {
+    // auhtorization codeを使ってtokenを取得
+    let data = reqwest::Client::new()
+        .post(&format!("{}/oauth/token", pgrit_origin))
+        .form(&[
+            ("grant_type", "authorization_code"),
+            ("redirect_uri", callback_url_ours),
+            ("client_id", pgrit_client_key),
+            ("client_secret", pgrit_client_secret),
+            ("code", code),
+            ("scope", "read:accounts"),
+        ])
+        .send()
+        .await?
+        .text()
+        .await?;
+
+    let json: Value = serde_json::from_str(&data)?;
+    let token = query_value!(json.access_token -> str).context("token not found")?;
+
+    // tokenを使ってユーザ情報を取得
+    let client = reqwest::Client::builder()
+        .default_headers({
+            let mut headers = header::HeaderMap::new();
+            headers.insert(
+                header::AUTHORIZATION,
+                HeaderValue::from_str(&format!("Bearer {}", token)).unwrap(),
+            );
+            headers
+        })
+        .build()?;
+
+    // sretrieve response
+    let res = client.get(account_verify_url).send().await?;
+
+    // get response body
+    let data: Value = serde_json::from_str(&res.text().await?)?;
+
+    // parse response body to get username
+    let username = query_value!(data.username -> str).context("username not found")?;
+
+    let id = {
+        let Ok(Some(u)) = user::Entity::find()
+            .column(user::Column::Id)
+            .filter(user::Column::PgritId.eq(username))
+            .one(db)
+            .await
+        else {
+            return Err(SignupError::UserNotFound);
+        };
+        u.id
+    };
+
+    mstdn_token::Entity::insert(mstdn_token::ActiveModel {
+        user_id: ActiveValue::Set(id.clone()),
+        access_token: ActiveValue::Set(token.to_string()),
+        authorization_code: ActiveValue::Set(code.to_string()),
+    })
+    .on_conflict(
+        OnConflict::column(mstdn_token::Column::UserId)
+            .update_columns([
+                mstdn_token::Column::AccessToken,
+                mstdn_token::Column::AuthorizationCode,
+            ])
+            .to_owned(),
+    )
+    .exec(db)
+    .await?;
+    Ok(format!("@{}, token: {}, auth: {}", username, token, code))
 }
 
 pub async fn insert(

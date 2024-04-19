@@ -112,7 +112,13 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(
-                        ColumnDef::new(mstdn_token::Column::Token)
+                        ColumnDef::new(mstdn_token::Column::AuthorizationCode)
+                            .string()
+                            .unique_key()
+                            .not_null(),
+                    )
+                    .col(
+                        ColumnDef::new(mstdn_token::Column::AccessToken)
                             .string()
                             .unique_key()
                             .not_null(),

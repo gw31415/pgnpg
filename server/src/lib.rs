@@ -8,7 +8,7 @@ use std::{
 
 use axum::{
     extract::{Path, Query},
-    http::{HeaderValue, StatusCode},
+    http::StatusCode,
     response::{IntoResponse, Redirect},
     routing::{any, get},
     Router,
@@ -17,7 +17,6 @@ use chrono::{Local, Utc};
 use reqwest::{header, Url};
 use sea_orm::DatabaseConnection;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use tower_cookies::{
     self,
     cookie::time::{Duration, OffsetDateTime},
@@ -30,7 +29,7 @@ use tower_http::{
 use ulid::Ulid;
 use usecase::profile;
 
-use crate::usecase::get_last_updated_at;
+use crate::usecase::{get_last_updated_at, signup};
 
 const DAYS_COUNT: i64 = 28;
 
@@ -291,67 +290,22 @@ pub async fn run(
 
                     // 一時ユーザが正常に認証された場合
 
-                    // auhtorization codeを使ってtokenを取得
-                    let token = {
-                        let data = reqwest::Client::new()
-                            .post(&format!("{}/oauth/token", pgrit_origin))
-                            .form(&[
-                                ("grant_type", "authorization_code"),
-                                ("redirect_uri", callback_url_ours.as_ref()),
-                                ("client_id", pgrit_client_key.as_ref()),
-                                ("client_secret", pgrit_client_secret.as_ref()),
-                                ("code", &code),
-                                ("scope", "read:accounts"),
-                            ])
-                            .send()
-                            .await
-                            .unwrap()
-                            .text()
-                            .await
-                            .unwrap();
-                        let Ok(data) = serde_json::from_str::<Value>(&data) else {
-                            return INTERNAL_SERVER_ERROR.into_response();
-                        };
-                        if let Some(Some(token)) = data
-                            .get("access_token")
-                            .map(|name| (name.as_str()).map(|name| name.to_string()))
-                        {
-                            token
-                        } else {
-                            return INTERNAL_SERVER_ERROR.into_response();
-                        }
-                    };
-
-                    // tokenを使ってユーザ情報を取得
-                    let client = reqwest::Client::builder()
-                        .default_headers({
-                            let mut headers = header::HeaderMap::new();
-                            headers.insert(
-                                header::AUTHORIZATION,
-                                HeaderValue::from_str(&format!("Bearer {}", token)).unwrap(),
-                            );
-                            headers
-                        })
-                        .build()
-                        .unwrap();
-                    let Ok(req) = client.get(account_verify_url.as_ref()).send().await else {
-                        return INTERNAL_SERVER_ERROR.into_response();
-                    };
-                    let Ok(data) = serde_json::from_str::<Value>(&{
-                        let Ok(body) = req.text().await else {
-                            return INTERNAL_SERVER_ERROR.into_response();
-                        };
-                        body
-                    }) else {
-                        return INTERNAL_SERVER_ERROR.into_response();
-                    };
-                    if let Some(Some(name)) = data
-                        .get("username")
-                        .map(|name| (name.as_str()).map(|name| name.to_string()))
+                    match signup(
+                        &db,
+                        &pgrit_origin,
+                        &callback_url_ours,
+                        &account_verify_url,
+                        &pgrit_client_key,
+                        &pgrit_client_secret,
+                        &code,
+                    )
+                    .await
                     {
-                        name.into_response()
-                    } else {
-                        (StatusCode::UNAUTHORIZED, "User not found").into_response()
+                        Ok(username) => username.into_response(),
+                        Err(usecase::SignupError::UserNotFound) => {
+                            (StatusCode::NOT_FOUND, "User not found").into_response()
+                        }
+                        Err(_) => INTERNAL_SERVER_ERROR.into_response(),
                     }
                 },
             ),
