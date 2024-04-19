@@ -279,7 +279,7 @@ pub async fn signup(
     )
     .exec(db)
     .await?;
-    Ok(format!("@{}, token: {}, auth: {}", username, token, code))
+    Ok(format!("@{}", username))
 }
 
 pub async fn insert(
