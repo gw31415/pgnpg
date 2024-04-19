@@ -32,6 +32,9 @@
 
 <slot name="head" />
 <style lang="scss" is:global>
+	button {
+		text-decoration: underline;
+	}
 	html,
 	body {
 		font-family: monospace;
@@ -48,15 +51,6 @@
 	main {
 		display: none;
 	}
-	#errmsg {
-		max-width: 100%;
-		width: 26ch;
-		animation: typing 2.6s steps(26), blink .5s step-end infinite alternate;
-		white-space: nowrap;
-		overflow: scroll;
-		border-right: 2px solid;
-		font-family: 'Roboto Mono', monospace;
-	}
 	html.wf-active {
 		font-family: sans-serif;
 		min-height: 0;
@@ -72,23 +66,27 @@
 			display: none;
 		}
 	}
-
+	noscript {
+		width: 26ch;
+		animation: typing 2.6s steps(26), blink .5s step-end infinite alternate;
+	}
 	.typing {
-		max-width: 100%;
 		width: 0;
 		animation: blink .5s step-end infinite alternate;
+	}
+	noscript,
+   .typing {
+		max-width: 100%;
 		white-space: nowrap;
 		overflow: scroll;
 		border-right: 2px solid;
 		font-family: 'Roboto Mono', monospace;
 	}
-
 	@keyframes typing {
 		from {
 			width: 0
 		}
 	}
-
 	@keyframes blink {
 		50% {
 			border-color: transparent
@@ -98,6 +96,6 @@
 
 <body>
 	<slot />
-	<div id="errmsg">Please Enable JavaScript.</div>
+	<noscript>Please Enable JavaScript.</noscript>
 </body>	
 </html>

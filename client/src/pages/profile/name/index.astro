@@ -21,6 +21,7 @@ import Main from "../../../layouts/Main.astro";
 			<canvas></canvas>
 		</section>
 	</main>
+	<div id="errmsg" class="typing">Loading...</div>
 </Main>
 
 <style lang="scss">
@@ -119,6 +120,23 @@ import type  UserProfile from "../../../types";
 
 import WebFont from "webfontloader";
 
+interface Color<T extends PgnLevel = PgnLevel> {
+	level: T,
+	color: T extends "GrandMaster" ? undefined : string,
+	min:  number,
+}
+
+const colors: Color[] = [
+	{ level: "Iron", color: "#ac9393", min: 0 },
+	{ level: "Bronze", color: "#aa4400", min: 500 },
+	{ level: "Silver", color: "#a7a7a7", min: 1000 },
+	{ level: "Gold", color: "#c8ab37", min: 2500 },
+	{ level: "Platinum", color: "black", min: 5000 },
+	{ level: "Diamond", color: "#00aad4", min: 10000 },
+	{ level: "Master", color: "#6A0DAD", min: 20000 },
+	{ level: "GrandMaster", color: undefined, min: 35000 },
+]
+
 function enableTyping(e: Element, msg?: string) {
 	const el = e as HTMLElement;
 	if (msg) errmsg.textContent = msg;
@@ -130,7 +148,6 @@ function enableTyping(e: Element, msg?: string) {
 		el.style.borderRight = "none";
 	});
 }
-
 const errmsg = document.getElementById("errmsg")!;
 enableTyping(errmsg, "Loading...");
 
@@ -162,23 +179,6 @@ WebFont.load({
 		text: "0123456789%",
 	}
 });
-
-interface Color<T extends PgnLevel = PgnLevel> {
-	level: T,
-	color: T extends "GrandMaster" ? undefined : string,
-	min:  number,
-}
-
-const colors: Color[] = [
-	{ level: "Iron", color: "#ac9393", min: 0 },
-	{ level: "Bronze", color: "#aa4400", min: 500 },
-	{ level: "Silver", color: "#a7a7a7", min: 1000 },
-	{ level: "Gold", color: "#c8ab37", min: 2500 },
-	{ level: "Platinum", color: "black", min: 5000 },
-	{ level: "Diamond", color: "#00aad4", min: 10000 },
-	{ level: "Master", color: "#6A0DAD", min: 20000 },
-	{ level: "GrandMaster", color: undefined, min: 35000 },
-]
 
 async function start() {
 	document.getElementById("title")!.textContent = '@' + data.user.pgrit_id;
