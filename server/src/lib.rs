@@ -1,22 +1,33 @@
 mod usecase;
 
-use std::{collections::HashSet, path::PathBuf, sync::Arc};
+use std::{
+    collections::{HashSet, VecDeque},
+    path::PathBuf,
+    sync::{Arc, Mutex},
+};
 
 use axum::{
-    extract::Path,
-    http::StatusCode,
-    response::IntoResponse,
+    extract::{Path, Query},
+    http::{HeaderValue, StatusCode},
+    response::{IntoResponse, Redirect},
     routing::{any, get},
     Router,
 };
-use chrono::Local;
-use reqwest::header;
+use chrono::{Local, Utc};
+use reqwest::{header, Url};
 use sea_orm::DatabaseConnection;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use tower_cookies::{
+    self,
+    cookie::time::{Duration, OffsetDateTime},
+    Cookie, CookieManagerLayer, Cookies,
+};
 use tower_http::{
     compression::CompressionLayer,
     services::{ServeDir, ServeFile},
 };
+use ulid::Ulid;
 use usecase::profile;
 
 use crate::usecase::get_last_updated_at;
@@ -95,23 +106,60 @@ async fn refresh(db: &DatabaseConnection, fetch_url: &str) {
     RUNNING_REFRESH.store(false, std::sync::atomic::Ordering::Relaxed);
 }
 
+#[derive(Deserialize)]
 pub struct Config {
-    pub db: DatabaseConnection,
     pub static_dir: PathBuf,
     pub fetch_url: Arc<str>,
+    pub origin: String,
+    pub pgrit_origin: String,
+    pub pgrit_client_key: Arc<str>,
+    pub pgrit_client_secret: Arc<str>,
+}
+
+#[derive(serde::Deserialize)]
+struct PgritOauthQuery {
+    code: String,
 }
 
 /// Start the server
 pub async fn run(
+    db: DatabaseConnection,
     Config {
-        db,
         static_dir,
         fetch_url,
+        origin,
+        pgrit_origin,
+        pgrit_client_key,
+        pgrit_client_secret,
     }: Config,
 ) {
-    static NOT_FOUND: (StatusCode, &str) = (StatusCode::NOT_FOUND, "Not found");
-    static INTERNAL_SERVER_ERROR: (StatusCode, &str) =
+    const NOT_FOUND: (StatusCode, &str) = (StatusCode::NOT_FOUND, "Not found");
+    const INTERNAL_SERVER_ERROR: (StatusCode, &str) =
         (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error");
+    const UNAUTHORIZED: (StatusCode, &str) = (StatusCode::UNAUTHORIZED, "Unauthorized");
+
+    let callback_url_ours: Arc<str> = format!("{}/api/auth/pgrit/confirm/", origin).into();
+
+    let pgrit_auth_url: Arc<str> = Url::parse_with_params(
+        &format!("{}/oauth/authorize", pgrit_origin),
+        &[
+            ("client_id", pgrit_client_key.as_ref()),
+            ("response_type", "code"),
+            ("redirect_uri", callback_url_ours.as_ref()),
+            ("scope", "read:accounts"),
+        ],
+    )
+    .unwrap()
+    .as_str()
+    .into();
+
+    let account_verify_url: Arc<str> = Url::parse(&format!(
+        "{}/api/v1/accounts/verify_credentials",
+        pgrit_origin
+    ))
+    .unwrap()
+    .as_str()
+    .into();
 
     let active_users = get({
         let db = db.clone();
@@ -153,6 +201,163 @@ pub async fn run(
     });
     let health_check = get("OK");
 
+    const PGRIT_COOKIE_NAME: &str = "signup";
+    const MINUTES: i64 = 5;
+    static TEMPORARY_USERS: Mutex<VecDeque<Ulid>> = Mutex::new(VecDeque::new());
+    let pgrit_oauth_router = Router::new()
+        .route(
+            "/initiate/",
+            get({
+                let pgrit_login_url = pgrit_auth_url.clone();
+                let origin = origin.clone();
+                |cookies: Cookies| async move {
+                    cookies.add({
+                        let age = Duration::minutes(MINUTES);
+                        let id = Ulid::new();
+                        TEMPORARY_USERS.lock().unwrap().push_back(id);
+                        let mut cookie = Cookie::new(PGRIT_COOKIE_NAME, id.to_string());
+                        cookie.set_secure(origin.starts_with("https://"));
+                        cookie.set_http_only(true);
+                        cookie.set_same_site(tower_cookies::cookie::SameSite::Lax);
+                        cookie.set_max_age(age);
+                        cookie.set_expires(OffsetDateTime::now_utc() + age);
+                        cookie.set_path("/");
+                        cookie
+                    });
+                    Redirect::permanent(&pgrit_login_url).into_response()
+                }
+            }),
+        )
+        .route(
+            "/confirm/",
+            get(
+                |Query(query): Query<PgritOauthQuery>, cookies: Cookies| async move {
+                    let deadline =
+                        (Utc::now() - chrono::Duration::minutes(MINUTES)).timestamp_millis() as u64;
+
+                    // 5分以上経過しているものは削除
+                    let id = loop {
+                        if let Some(id) = { TEMPORARY_USERS.lock().unwrap().pop_front() } {
+                            if id.timestamp_ms() > deadline {
+                                // 5分以上経過していないものに到達した場合
+                                break Some(id);
+                            }
+                            // 5分以上経過しているものは削除
+                        } else {
+                            break None;
+                        }
+                    };
+                    if let Some(id) = id {
+                        TEMPORARY_USERS.lock().unwrap().push_front(id);
+                    }
+
+                    // 5分以上経過していた場合はエラー
+                    let user_id = {
+                        let may_id = cookies
+                            .get(PGRIT_COOKIE_NAME)
+                            .map(|c| Ulid::from_string(c.value()));
+                        cookies.remove(Cookie::build(PGRIT_COOKIE_NAME).path("/").build());
+                        match may_id {
+                            Some(Ok(ulid)) => ulid,
+                            _ => {
+                                return UNAUTHORIZED.into_response();
+                            }
+                        }
+                    };
+
+                    // 残りの有効な一時ユーザにクライアントが含まれているか確認
+                    let mut range = { 0..TEMPORARY_USERS.lock().unwrap().len() };
+
+                    // 一時ユーザの中からクライアントが含まれているものを取り出す
+                    let Some(code) = (loop {
+                        let Some(i) = range.next() else {
+                            break None;
+                        };
+                        // 古い順に取り出される
+                        let u = { TEMPORARY_USERS.lock().unwrap()[i] };
+                        match u.cmp(&user_id) {
+                            std::cmp::Ordering::Equal => {
+                                TEMPORARY_USERS.lock().unwrap().remove(i);
+                                break Some(query.code);
+                            }
+                            std::cmp::Ordering::Greater => {
+                                break None;
+                            }
+                            _ => {}
+                        }
+                    }) else {
+                        return UNAUTHORIZED.into_response();
+                    };
+
+                    // 一時ユーザが正常に認証された場合
+
+                    // auhtorization codeを使ってtokenを取得
+                    let token = {
+                        let data = reqwest::Client::new()
+                            .post(&format!("{}/oauth/token", pgrit_origin))
+                            .form(&[
+                                ("grant_type", "authorization_code"),
+                                ("redirect_uri", callback_url_ours.as_ref()),
+                                ("client_id", pgrit_client_key.as_ref()),
+                                ("client_secret", pgrit_client_secret.as_ref()),
+                                ("code", &code),
+                                ("scope", "read:accounts"),
+                            ])
+                            .send()
+                            .await
+                            .unwrap()
+                            .text()
+                            .await
+                            .unwrap();
+                        let Ok(data) = serde_json::from_str::<Value>(&data) else {
+                            return INTERNAL_SERVER_ERROR.into_response();
+                        };
+                        if let Some(Some(token)) = data
+                            .get("access_token")
+                            .map(|name| (name.as_str()).map(|name| name.to_string()))
+                        {
+                            token
+                        } else {
+                            return INTERNAL_SERVER_ERROR.into_response();
+                        }
+                    };
+
+                    // tokenを使ってユーザ情報を取得
+                    let client = reqwest::Client::builder()
+                        .default_headers({
+                            let mut headers = header::HeaderMap::new();
+                            headers.insert(
+                                header::AUTHORIZATION,
+                                HeaderValue::from_str(&format!("Bearer {}", token)).unwrap(),
+                            );
+                            headers
+                        })
+                        .build()
+                        .unwrap();
+                    let Ok(req) = client.get(account_verify_url.as_ref()).send().await else {
+                        return INTERNAL_SERVER_ERROR.into_response();
+                    };
+                    let Ok(data) = serde_json::from_str::<Value>(&{
+                        let Ok(body) = req.text().await else {
+                            return INTERNAL_SERVER_ERROR.into_response();
+                        };
+                        body
+                    }) else {
+                        return INTERNAL_SERVER_ERROR.into_response();
+                    };
+                    if let Some(Some(name)) = data
+                        .get("username")
+                        .map(|name| (name.as_str()).map(|name| name.to_string()))
+                    {
+                        name.into_response()
+                    } else {
+                        (StatusCode::UNAUTHORIZED, "User not found").into_response()
+                    }
+                },
+            ),
+        )
+        .layer(CookieManagerLayer::new());
+
     let app = Router::new()
         .nest(
             "/api/",
@@ -160,7 +365,8 @@ pub async fn run(
                 .route("/", health_check.clone())
                 .route("/actives.json", active_users)
                 .route("/profile/pgrit/:pgrit_id/data.json", profile.clone()) // <- 暫定, 本当は /profile/{pgrit_id}.json にしたい
-                .route("/refresh/", refresh),
+                .route("/refresh/", refresh)
+                .nest("/auth/pgrit/", pgrit_oauth_router),
         )
         .nest(
             "/profile/:pgrid_id/",

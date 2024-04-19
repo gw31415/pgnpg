@@ -1,13 +1,11 @@
-use std::{path::PathBuf, sync::Arc};
-
 use migration::{Migrator, MigratorTrait};
 use sea_orm::{ConnectOptions, Database};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
 struct Environment {
-    static_dir: PathBuf,
-    fetch_url: Arc<str>,
+    #[serde(flatten)]
+    server_config: server::Config,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -32,12 +30,7 @@ async fn main() -> Result<(), Error> {
     Migrator::up(&db, None).await?;
 
     // Run the server
-    server::run(server::Config {
-        db,
-        static_dir: env.static_dir,
-        fetch_url: env.fetch_url,
-    })
-    .await;
+    server::run(db, env.server_config).await;
 
     Ok(())
 }
