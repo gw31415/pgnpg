@@ -75,20 +75,45 @@ if (Astro.url.pathname !== "/") {
 		}
 		</div>
 		<slot name="header" />
+		<div style="flex:1"></div>
+		<div id="account">
+			<input type="checkbox" id="menu"/>
+			<label for="menu"></label>
+			<div>
+				<button onclick="location.href='/api/auth/logout/'">Logout</button>
+			</div>
 	</header>
 	<main>
 		<slot />
 	</main>
 	<noscript>Please Enable JavaScript.</noscript>
 </body>	
-
-	</html>
+</html>
 
 <style lang="scss" is:global>
+	#account {
+		label {
+			cursor: pointer;
+		}
+		input {
+			display: none;
+		}
+		div {
+			display: none;
+			position: absolute;
+			top: 2rem;
+			right: 0;
+			background-color: #ccc;
+			z-index: 1;
+		}
+		input:checked ~ div {
+			display: block;
+		}
+	}
 	header {
 		display: flex;
 		align-items: center;
-		min-height: 2rem;
+		min-height: 3rem;
 		padding: .5rem;
 	}
 	main {
@@ -140,3 +165,11 @@ if (Astro.url.pathname !== "/") {
 		}
 	}
 </style>
+
+<script>
+import type { User } from "../types";
+const user: User | null = await fetch("/api/me.json").then((res) => res.json());
+if (user) {
+	document.querySelector("#account label")!.textContent = user.pgrit_id;
+}
+</script>

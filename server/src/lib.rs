@@ -1,12 +1,14 @@
 mod usecase;
 
+use entity::user;
 use std::{collections::HashSet, path::PathBuf, sync::Arc};
 use time::Duration;
 
 use axum::{
-    extract::{Path, Query},
+    extract::{Path, Query, Request},
     http::StatusCode,
-    response::{IntoResponse, Redirect},
+    middleware::{self, Next},
+    response::{IntoResponse, Redirect, Response},
     routing::{any, get},
     Router,
 };
@@ -18,7 +20,8 @@ use tower_http::{
     compression::CompressionLayer,
     services::{ServeDir, ServeFile},
 };
-use tower_sessions::{Expiry, MemoryStore, Session, SessionManagerLayer};
+use tower_sessions::{Expiry, Session, SessionManagerLayer};
+use tower_sessions_sqlx_store::SqliteStore;
 use usecase::profile;
 
 use crate::usecase::{get_last_updated_at, signup};
@@ -152,6 +155,14 @@ pub async fn run(
     .as_str()
     .into();
 
+    let session_layer = SessionManagerLayer::new({
+        let store = SqliteStore::new(db.get_sqlite_connection_pool().clone());
+        store.migrate().await.unwrap();
+        store
+    })
+    .with_expiry(Expiry::OnInactivity(Duration::days(7)))
+    .with_secure(origin.starts_with("https://"));
+
     let active_users = get({
         let db = db.clone();
         || async move {
@@ -190,76 +201,110 @@ pub async fn run(
             }
         }
     });
+    let me = get({
+        |session: Session| async move {
+            json(session.get::<user::Model>("user").await.ok().flatten())
+        }
+    });
     let health_check = get("OK");
 
-    const INITIATED: &str = "initiated";
-    let pgrit_oauth_router = Router::new()
-        .route(
-            "/initiate/",
-            get({
-                let pgrit_login_url = pgrit_auth_url.clone();
-                |session: Session| async move {
-                    if session.insert(INITIATED, true).await.is_err() {
-                        INTERNAL_SERVER_ERROR.into_response()
-                    } else {
-                        Redirect::permanent(&pgrit_login_url).into_response()
+    const USER_KEY: &str = "user";
+    let pgrit_oauth_router = {
+        const INITIATED_KEY: &str = "initiated";
+        Router::new()
+            .route(
+                "/initiate/",
+                get({
+                    let pgrit_login_url = pgrit_auth_url.clone();
+                    |session: Session| async move {
+                        if let Ok(Some(user)) = session.get::<user::Model>(USER_KEY).await {
+                            return Redirect::permanent(&format!("/profile/{}/", user.pgrit_id))
+                                .into_response();
+                        }
+                        if session.insert(INITIATED_KEY, true).await.is_err() {
+                            INTERNAL_SERVER_ERROR.into_response()
+                        } else {
+                            Redirect::permanent(&pgrit_login_url).into_response()
+                        }
                     }
-                }
-            }),
-        )
-        .route(
-            "/confirm/",
-            get(
-                |Query(query): Query<PgritOauthQuery>, session: Session| async move {
-                    if session
-                        .get::<bool>(INITIATED)
+                }),
+            )
+            .route(
+                "/confirm/",
+                get({
+                    let db = db.clone();
+                    |Query(query): Query<PgritOauthQuery>, session: Session| async move {
+                        if session
+                            .get::<bool>(INITIATED_KEY)
+                            .await
+                            .unwrap_or(Some(false))
+                            .unwrap_or(false)
+                        {
+                            return UNAUTHORIZED.into_response();
+                        }
+                        session.remove::<bool>(INITIATED_KEY).await.unwrap();
+
+                        let code = query.code;
+
+                        // 一時ユーザが正常に認証された場合
+
+                        match signup(
+                            &db,
+                            &pgrit_origin,
+                            &callback_url_ours,
+                            &account_verify_url,
+                            &pgrit_client_key,
+                            &pgrit_client_secret,
+                            &code,
+                        )
                         .await
-                        .unwrap_or(Some(false))
-                        .unwrap_or(false)
-                    {
-                        return UNAUTHORIZED.into_response();
-                    }
-                    session.remove::<bool>(INITIATED).await.unwrap();
-
-                    let code = query.code;
-
-                    // 一時ユーザが正常に認証された場合
-
-                    match signup(
-                        &db,
-                        &pgrit_origin,
-                        &callback_url_ours,
-                        &account_verify_url,
-                        &pgrit_client_key,
-                        &pgrit_client_secret,
-                        &code,
-                    )
-                    .await
-                    {
-                        Ok(username) => {
-                            Redirect::permanent(&format!("/profile/{}/", username)).into_response()
+                        {
+                            Ok(user) => {
+                                if session.insert(USER_KEY, user.clone()).await.is_err() {
+                                    return UNAUTHORIZED.into_response();
+                                }
+                                Redirect::permanent("/").into_response()
+                            }
+                            Err(usecase::SignupError::UserNotFound) => {
+                                (StatusCode::NOT_FOUND, "User not found").into_response()
+                            }
+                            Err(_) => INTERNAL_SERVER_ERROR.into_response(),
                         }
-                        Err(usecase::SignupError::UserNotFound) => {
-                            (StatusCode::NOT_FOUND, "User not found").into_response()
-                        }
-                        Err(_) => INTERNAL_SERVER_ERROR.into_response(),
                     }
-                },
-            ),
-        )
-        .layer(
-            SessionManagerLayer::new(MemoryStore::default())
-                .with_expiry(Expiry::OnInactivity(Duration::minutes(5)))
-                .with_secure(origin.starts_with("https://")),
-        );
+                }),
+            )
+    };
+
+    let block_unauthorized = {
+        async fn func(
+            session: Session,
+            req: Request,
+            next: Next,
+        ) -> Result<Response, (StatusCode, impl IntoResponse)> {
+            if let Ok(Some(_)) = session.get::<user::Model>(USER_KEY).await {
+                Ok(next.run(req).await)
+            } else {
+                Err(UNAUTHORIZED)
+            }
+        }
+        middleware::from_fn(func)
+    };
 
     let app = Router::new()
         .nest(
             "/api/",
             Router::new()
-                .route("/", health_check.clone())
+                .route("/", health_check)
                 .route("/actives.json", active_users)
                 .route("/profile/pgrit/:pgrit_id/data.json", profile.clone()) // <- 暫定, 本当は /profile/{pgrit_id}.json にしたい
+                .route("/auth/logout/", get({
+                    |session: Session| async move {
+                        session.remove::<user::Model>(USER_KEY).await.unwrap();
+                        Redirect::permanent("/").into_response()
+                    }
+                }))
+                .layer(block_unauthorized.clone())
+                .route("/me.json", me)
                 .route("/refresh/", refresh)
                 .nest("/auth/pgrit/", pgrit_oauth_router),
         )
@@ -270,13 +315,15 @@ pub async fn run(
                     "/",
                     ServeFile::new(static_dir.join("profile/name/index.html")),
                 )
-                .route("/data.json", profile),
+                .route("/data.json", profile)
+                .layer(block_unauthorized)
         )
         .nest_service(
             "/",
             ServeDir::new(static_dir).not_found_service(any(NOT_FOUND)),
         )
         .layer(CompressionLayer::new())
+        .layer(session_layer)
         .fallback(NOT_FOUND);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3232").await.unwrap();

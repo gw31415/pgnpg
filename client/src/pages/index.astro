@@ -10,3 +10,10 @@ import Main from "../layouts/Main.astro";
 		text-align: center;
 	}
 </style>
+<script>
+	import type { User } from "../types";
+	const user: User | null = await fetch("/api/me.json").then((res) => res.json());
+	if (user) {
+		document.querySelector("main button")!.textContent = "View Profile";
+	}
+</script>

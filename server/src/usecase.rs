@@ -211,7 +211,7 @@ pub async fn signup(
     pgrit_client_key: &str,
     pgrit_client_secret: &str,
     code: &str,
-) -> Result<String, SignupError> {
+) -> Result<user::Model, SignupError> {
     // auhtorization codeを使ってtokenを取得
     let data = reqwest::Client::new()
         .post(&format!("{}/oauth/token", pgrit_origin))
@@ -252,20 +252,19 @@ pub async fn signup(
     // parse response body to get username
     let username = query_value!(data.username -> str).context("username not found")?;
 
-    let id = {
+    let user = {
         let Ok(Some(u)) = user::Entity::find()
-            .column(user::Column::Id)
             .filter(user::Column::PgritId.eq(username))
             .one(db)
             .await
         else {
             return Err(SignupError::UserNotFound);
         };
-        u.id
+        u
     };
 
     mstdn_token::Entity::insert(mstdn_token::ActiveModel {
-        user_id: ActiveValue::Set(id.clone()),
+        user_id: ActiveValue::Set(user.id.clone()),
         access_token: ActiveValue::Set(token.to_string()),
         authorization_code: ActiveValue::Set(code.to_string()),
     })
@@ -279,7 +278,7 @@ pub async fn signup(
     )
     .exec(db)
     .await?;
-    Ok(username.to_string())
+    Ok(user)
 }
 
 pub async fn insert(
