@@ -7,6 +7,8 @@ use serde::Serialize;
 #[derive(PartialEq, Debug, Clone, EnumIter, DeriveActiveEnum, Serialize)]
 #[sea_orm(rs_type = "String", db_type = "String(Some(1))")]
 pub enum Degree {
+    #[sea_orm(string_value = "high")]
+    HighSchool,
     /// 学士
     #[sea_orm(string_value = "bachelor")]
     Bachelor,
@@ -23,6 +25,7 @@ impl FromStr for Degree {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
+            "H" => Ok(Degree::HighSchool),
             "B" => Ok(Degree::Bachelor),
             "M" => Ok(Degree::Master),
             "D" => Ok(Degree::Doctor),
@@ -37,6 +40,7 @@ impl Display for Degree {
             f,
             "{}",
             match self {
+                Degree::HighSchool => "H",
                 Degree::Bachelor => "B",
                 Degree::Master => "M",
                 Degree::Doctor => "D",

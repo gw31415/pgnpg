@@ -1,4 +1,4 @@
-use std::{fmt::Display, str::FromStr};
+use std::{borrow::Cow, fmt::Display, str::FromStr};
 
 use crate::degree::Degree;
 
@@ -21,8 +21,27 @@ impl FromStr for Grade {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let degree_step = Degree::from_str(&s[0..1]).map_err(|_| "invalid degree step")?;
-        let grade = s[1..].parse().map_err(|_| "invalid grade".to_string())?;
+        let mut source = Cow::Borrowed(s);
+
+        // 例外処理
+        if s.starts_with('高') {
+            let mut string = s.replace("高校", "");
+            if string.ends_with("年生") {
+                string = string.replace("年生", "");
+            }
+            match string.as_str() {
+                "1" | "一" => string = "H1".to_string(),
+                "2" | "二" => string = "H2".to_string(),
+                "3" | "三" => string = "H3".to_string(),
+                _ => return Err("invalid grade".to_string()),
+            }
+            source = Cow::Owned(string);
+        }
+
+        let degree_step = Degree::from_str(&source[0..1]).map_err(|_| "invalid degree step")?;
+        let grade = source[1..]
+            .parse()
+            .map_err(|_| "invalid grade".to_string())?;
         Ok(Grade {
             degree_step,
             nth: grade,
