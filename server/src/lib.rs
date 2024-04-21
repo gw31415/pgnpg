@@ -52,7 +52,7 @@ async fn refresh(db: &DatabaseConnection, fetch_url: &str) {
     let mut active_users_pre: Option<_> = None;
 
     // 最初に最低限必要な日付を取得
-    let end = now.with_timezone(&Local).date_naive() - chrono::Duration::days(1);
+    let end = now.with_timezone(&Local).date_naive();
     // 最低一日は取得
     let start = if let Some(last_datetime) = get_last_updated_at(db).await.unwrap() {
         // 30分以上の間隔がない場合は中止

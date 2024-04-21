@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use anyhow::Context;
 use axum::http::HeaderValue;
-use chrono::NaiveDate;
+use chrono::{NaiveDate, Local};
 use entity::{
     error::Error,
     grade::Grade,
@@ -52,6 +52,7 @@ pub async fn profile(
         .select_also(user::Entity)
         .join(sea_orm::JoinType::InnerJoin, pix::Relation::User.def())
         .filter(user::Column::PgritId.eq(pgrit_id))
+        .filter(pix::Column::Date.lt(now.with_timezone(&Local).date_naive())) // 今日のデータは含めない
         .order_by(pix::Column::Date, sea_orm::Order::Desc)
         .limit(28)
         .all(db)
