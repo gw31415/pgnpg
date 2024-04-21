@@ -131,6 +131,7 @@ pub async fn run(
     const INTERNAL_SERVER_ERROR: (StatusCode, &str) =
         (StatusCode::INTERNAL_SERVER_ERROR, "Internal server error");
     const UNAUTHORIZED: (StatusCode, &str) = (StatusCode::UNAUTHORIZED, "Unauthorized");
+    const USER_KEY: &str = "user";
 
     let callback_url_ours: Arc<str> = format!("{}/api/auth/pgrit/confirm/", origin).into();
 
@@ -203,12 +204,11 @@ pub async fn run(
     });
     let me = get({
         |session: Session| async move {
-            json(session.get::<user::Model>("user").await.ok().flatten())
+            json(session.get::<user::Model>(USER_KEY).await.ok().flatten())
         }
     });
     let health_check = get("OK");
 
-    const USER_KEY: &str = "user";
     let pgrit_oauth_router = {
         const INITIATED_KEY: &str = "initiated";
         Router::new()

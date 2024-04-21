@@ -14,6 +14,10 @@ import Main from "../layouts/Main.astro";
 	import type { User } from "../types";
 	const user: User | null = await fetch("/api/me.json").then((res) => res.json());
 	if (user) {
-		document.querySelector("main button")!.textContent = "View Profile";
+		const button = document.querySelector("main button")! as HTMLButtonElement;
+		button.textContent = "View Profile";
+		button.onclick = () => {
+			location.href = `/profile/${user.pgrit_id}/`;
+		};
 	}
 </script>
