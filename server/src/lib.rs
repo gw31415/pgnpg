@@ -192,7 +192,7 @@ pub async fn run(
     });
     let health_check = get("OK");
 
-    const INITIATED: &str = "signup";
+    const INITIATED: &str = "initiated";
     let pgrit_oauth_router = Router::new()
         .route(
             "/initiate/",
