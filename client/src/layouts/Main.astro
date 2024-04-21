@@ -1,3 +1,33 @@
+---
+interface BreadcrumbItem<T extends boolean = boolean> {
+  text: T extends true ? true : false;
+  href: T extends true ? undefined : string;
+  innerText: string;
+}
+let breadcrumb: BreadcrumbItem[] = [];
+if (Astro.url.pathname !== "/") {
+  breadcrumb = [
+    "",
+    ...Astro.url.pathname
+      .split("/")
+      .filter((v) => v.length > 0)
+      .slice(0, -1),
+  ].flatMap((v, i, r) => {
+    return [
+      {
+        text: true,
+        href: undefined,
+        innerText: "/",
+      },
+      {
+        text: false,
+        href: `/${r.slice(1, i + 1).join("/")}`,
+        innerText: v.length === 0 ? "Home" : v,
+      },
+    ];
+  });
+}
+---
 <html lang="ja">
 <head>
 <meta charset="utf-8" />
@@ -33,6 +63,17 @@
 <body>
 	<slot name="raw" />
 	<header>
+		<div>
+		{
+			breadcrumb.map((v => {
+				if (v.text) {
+					return <span>{v.innerText}</span>;
+				} else {
+					return <a href={v.href}>{v.innerText}</a>;
+				}
+			}))
+		}
+		</div>
 		<slot name="header" />
 	</header>
 	<main>
@@ -46,7 +87,6 @@
 <style lang="scss" is:global>
 	header {
 		display: flex;
-		justify-content: space-between;
 		align-items: center;
 		min-height: 2rem;
 		padding: .5rem;

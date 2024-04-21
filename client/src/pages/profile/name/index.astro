@@ -11,7 +11,8 @@ import Main from "../../../layouts/Main.astro";
 		<div id="tmsg" class="typing topmsg">Loading...</div>
 	</Fragment>
 	<Fragment slot="header">
-		<div id="title" class="typing" style="font-size:1.2rem">@</div>
+		<b id="title" class="typing">/@</b>
+		<div style="flex:1"></div>
 		<div id="updatedat" style="text-align:right"></div>
 	</Fragment>
 
@@ -141,7 +142,7 @@ WebFont.load({
 });
 
 async function start() {
-	document.getElementById("title")!.textContent = '@' + data.user.pgrit_id;
+	document.getElementById("title")!.textContent = '/@' + data.user.pgrit_id;
 	document.getElementById("updatedat")!.textContent = new Date(data.pgn.updated_at).toLocaleString();
 
 	document.querySelectorAll(".typing").forEach((e) => loadTyping(e as HTMLDivElement));
