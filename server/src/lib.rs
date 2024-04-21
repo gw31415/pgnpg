@@ -301,7 +301,9 @@ pub async fn run(
                     )
                     .await
                     {
-                        Ok(username) => username.into_response(),
+                        Ok(username) => {
+                            Redirect::permanent(&format!("/profile/{}/", username)).into_response()
+                        }
                         Err(usecase::SignupError::UserNotFound) => {
                             (StatusCode::NOT_FOUND, "User not found").into_response()
                         }

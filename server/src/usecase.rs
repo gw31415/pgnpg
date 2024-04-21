@@ -243,7 +243,7 @@ pub async fn signup(
         })
         .build()?;
 
-    // sretrieve response
+    // retrieve response
     let res = client.get(account_verify_url).send().await?;
 
     // get response body
@@ -279,7 +279,7 @@ pub async fn signup(
     )
     .exec(db)
     .await?;
-    Ok(format!("@{}", username))
+    Ok(username.to_string())
 }
 
 pub async fn insert(
