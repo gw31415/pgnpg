@@ -192,14 +192,14 @@ pub async fn run(
     });
     let health_check = get("OK");
 
-    const PGRIT_COOKIE_NAME: &str = "signup";
+    const INITIATED: &str = "signup";
     let pgrit_oauth_router = Router::new()
         .route(
             "/initiate/",
             get({
                 let pgrit_login_url = pgrit_auth_url.clone();
                 |session: Session| async move {
-                    if session.insert(PGRIT_COOKIE_NAME, true).await.is_err() {
+                    if session.insert(INITIATED, true).await.is_err() {
                         INTERNAL_SERVER_ERROR.into_response()
                     } else {
                         Redirect::permanent(&pgrit_login_url).into_response()
@@ -212,14 +212,14 @@ pub async fn run(
             get(
                 |Query(query): Query<PgritOauthQuery>, session: Session| async move {
                     if session
-                        .get::<bool>(PGRIT_COOKIE_NAME)
+                        .get::<bool>(INITIATED)
                         .await
                         .unwrap_or(Some(false))
                         .unwrap_or(false)
                     {
                         return UNAUTHORIZED.into_response();
                     }
-                    session.remove::<bool>(PGRIT_COOKIE_NAME).await.unwrap();
+                    session.remove::<bool>(INITIATED).await.unwrap();
 
                     let code = query.code;
 
