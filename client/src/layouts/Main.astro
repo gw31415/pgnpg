@@ -29,42 +29,48 @@
 <!--<meta name="twitter:title" content="{{ title }}" />-->
 <!--<meta name="twitter:description" content="" />-->
 <!--<meta name="twitter:image" content="" />-->
-
 <slot name="head" />
+<body>
+	<slot name="raw" />
+	<header>
+		<slot name="header" />
+	</header>
+	<main>
+		<slot />
+	</main>
+	<noscript>Please Enable JavaScript.</noscript>
+</body>	
+
+	</html>
+
 <style lang="scss" is:global>
+	header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		min-height: 2rem;
+		padding: .5rem;
+	}
+	main {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
 	button {
 		text-decoration: underline;
 	}
 	html,
 	body {
-		font-family: monospace;
+		font-family: 'Roboto Mono', monospace;
 		line-height: 1.5;
 		min-height: 100vh;
 		min-height: 100dvh;
+		font-size: 20px;
 	}
-	body {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-	}
-	main {
-		display: none;
-	}
-	html.wf-active {
-		font-family: sans-serif;
-		min-height: 0;
-		body {
-			font-family: sans-serif;
-			justify-content: start;
-			min-height: 0;
-		}
-		main {
-			display: block;
-		}
-		#errmsg {
-			display: none;
-		}
+	.topmsg, noscript {
+		position: fixed;
+		inset: 0;
+		margin: auto;
 	}
 	noscript {
 		width: 26ch;
@@ -76,6 +82,7 @@
 	}
 	noscript,
    .typing {
+		height: 1lh;
 		max-width: 100%;
 		white-space: nowrap;
 		overflow: scroll;
@@ -93,9 +100,3 @@
 		}
 	}
 </style>
-
-<body>
-	<slot />
-	<noscript>Please Enable JavaScript.</noscript>
-</body>	
-</html>

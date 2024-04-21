@@ -3,49 +3,25 @@ import Main from "../../layouts/Main.astro";
 ---
 
 <Main>
-	<main>
-		<form>
-			<h1>Profile search:</h1>
-			<div>
-				View<wbr/>
-				<span style="text-wrap: nowrap;">@<div class="input">
-					<input type="text" name="id" autofocus required pattern="\\w+" maxlength="40" spellcheck="false" placeholder="ID"/>
-					<div>__</div>
-				</div>'s</span>
-				<wbr/>profile;
-			</div>
-			<div id="suggest"></div>
-			<div>/* Press <button type="submit">ENTER</button> to enter */</div>
-		</form>
-	</main>
+	<h1>Profile search:</h1>
+	<form>
+		<div>
+			View<wbr/>
+			<span style="text-wrap: nowrap;">@<div class="input">
+				<input type="text" name="id" autofocus required pattern="\\w+" maxlength="40" spellcheck="false" placeholder="ID"/>
+				<div>__</div>
+			</div>'s</span>
+			<wbr/>profile;
+		</div>
+		<div id="suggest"></div>
+		<div>/* Press <button type="submit">ENTER</button> to enter */</div>
+	</form>
 </Main>
 
 <style lang="scss">
 	#suggest {
 		height: 1lh;
 	}
-	@keyframes typing {
-		from {
-			width: 0
-		}
-	}
-	@keyframes blink {
-		50% {
-			border-color: transparent
-		}
-	}
-	html.wf-active main {
-		display: flex; // wf-active になった後blockにならないように
-	}
-	main {
-		padding-top: 1lh;
-		flex-direction: column;
-		align-items: center;
-		font-size: 1.5rem;
-		font-family: 'Roboto Mono', monospace;
-		display: none;
-	}
-
 	form {
 		padding: .5rem;
 	}
