@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use anyhow::Context;
 use axum::http::HeaderValue;
-use chrono::{NaiveDate, Local};
+use chrono::{Local, NaiveDate};
 use entity::{
     error::Error,
     grade::Grade,

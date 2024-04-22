@@ -203,9 +203,7 @@ pub async fn run(
         }
     });
     let me = get({
-        |session: Session| async move {
-            json(session.get::<user::Model>(USER_KEY).await.ok().flatten())
-        }
+        |session: Session| async move { json(session.get::<user::Model>(USER_KEY).await.ok().flatten()) }
     });
     let health_check = get("OK");
 
@@ -297,12 +295,15 @@ pub async fn run(
                 .route("/", health_check)
                 .route("/actives.json", active_users)
                 .route("/profile/pgrit/:pgrit_id/data.json", profile.clone()) // <- 暫定, 本当は /profile/{pgrit_id}.json にしたい
-                .route("/auth/logout/", get({
-                    |session: Session| async move {
-                        session.remove::<user::Model>(USER_KEY).await.unwrap();
-                        Redirect::permanent("/").into_response()
-                    }
-                }))
+                .route(
+                    "/auth/logout/",
+                    get({
+                        |session: Session| async move {
+                            session.remove::<user::Model>(USER_KEY).await.unwrap();
+                            Redirect::permanent("/").into_response()
+                        }
+                    }),
+                )
                 .layer(block_unauthorized.clone())
                 .route("/me.json", me)
                 .route("/refresh/", refresh)
@@ -316,7 +317,7 @@ pub async fn run(
                     ServeFile::new(static_dir.join("profile/name/index.html")),
                 )
                 .route("/data.json", profile)
-                .layer(block_unauthorized)
+                .layer(block_unauthorized),
         )
         .nest_service(
             "/",

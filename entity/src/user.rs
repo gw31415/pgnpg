@@ -1,7 +1,7 @@
 //! ユーザー情報を管理するモデル
 
 use sea_orm::entity::prelude::*;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
 #[sea_orm(table_name = "users")]

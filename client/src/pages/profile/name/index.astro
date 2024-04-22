@@ -19,13 +19,42 @@ import Main from "../../../layouts/Main.astro";
 		<div><circle-progress text-format="vertical"></circle-progress></div>
 		<div id="updatedat" style="text-align:right"></div>
 	</section>
-	<section id="daily-chart" style="height:150vh;width:100vw;padding:.5rem">
+	<section id="inspections">
+		<h2>Inspections</h2>
+		<table></table>
+	</section>
+	<section id="daily-chart" style="height:150vh">
 		<h2>Daily PIX</h2>
 		<canvas></canvas>
 	</section>
 </Main>
 
 <style lang="scss" is:global>
+	section {
+		padding: 1rem;
+		width: 800px;
+		@media (max-width: 1000px) {
+			width: 80vw;
+		}
+		@media (max-width: 480px) {
+			width: 100vw;
+		}
+	}
+	#inspections {
+		table {
+			th, td {
+				padding: .5rem;
+				border-bottom: 1px solid #ccc;
+			}
+			th {
+				text-align: right;
+				width: 40%;
+			}
+			td {
+				text-align: left;
+			}
+		}
+	}
 	circle-progress::part(base) {
 		height: 60vmin;
 		width: 60vmin;
@@ -151,7 +180,7 @@ async function start() {
 		circle.setAttribute("value","100");
 		circle.setAttribute("max","100");
 		circle.setAttribute("text-format", "percent");
-	}else {
+	} else {
 		circle.setAttribute("value", `${data.pgn.on_level}`);
 		circle.setAttribute("max", `${data.pgn.level_length}`);
 	}
@@ -173,6 +202,37 @@ async function start() {
 	const dailyChart = document.querySelector("#daily-chart canvas") as HTMLCanvasElement;
 	dailyChart.height = document.getElementById("daily-chart")!.offsetHeight;
 	dailyChart.width = document.getElementById("daily-chart")!.offsetWidth;
+
+	const nextLevel = data.pgn.level === "GrandMaster" ? undefined : colors[colors.findIndex((c) => c.level === data.pgn.level) + 1];
+	const inspections: { key: string, value: string }[] = [
+		{ key: "Earned pix (1M)", value: data.pgn.last_month.toString() },
+		{ key: "Next Lv.", value: nextLevel?.level ?? "-"},
+		{ key: "Required pix for the Next Lv.", value: data.pgn.level_length?.toString() ?? "-" },
+		{ key: "Remaining", value: data.pgn.behind_next?.toString() ?? "-" },
+		{ key: "Progress on the Lv.", value: data.pgn.progress === undefined ? "-" : (data.pgn.progress * 100).toPrecision(3) + "%" },
+	];
+	const inspectionTable = document.querySelector("#inspections table") as HTMLTableElement;
+	inspections.forEach(({ key, value }) => {
+		const tr = document.createElement("tr");
+		const th = document.createElement("th");
+		th.textContent = key;
+		const td = document.createElement("td");
+		const span = document.createElement("span");
+		span.textContent = value;
+		if (key === "Next Lv.") {
+			span.style.fontFamily = "'Jersey 10', monospace";
+			span.style.fontSize = "1.5em";
+			if (nextLevel?.color) {
+				span.style.color = nextLevel.color as string;
+			} else if (nextLevel) {
+				span.classList.add("rainbow");
+			}
+		}
+		td.appendChild(span);
+		tr.appendChild(th);
+		tr.appendChild(td);
+		inspectionTable.appendChild(tr);
+	});
 
 	const chartjs = await import("chart.js/auto");
 	new chartjs.Chart(dailyChart, {
