@@ -85,15 +85,11 @@ import Main from "../../../layouts/Main.astro";
 	}
 
 	header, main {
-		transition: opacity .2s;
+		opacity: 0;
 	}
 
 	header {
 		padding: .5rem;
-	}
-
-	header, main {
-		opacity: 0;
 	}
 
 	html.wf-active.ready {
@@ -102,6 +98,7 @@ import Main from "../../../layouts/Main.astro";
 			display: block;
 		}
 		header, main {
+			transition: opacity .2s;
 			opacity: 1;
 			width: 100%;
 			height: auto;
