@@ -220,12 +220,14 @@ async function start() {
 		const span = document.createElement("span");
 		span.textContent = value;
 		if (key === "Next Lv.") {
-			span.style.fontFamily = "'Jersey 10', monospace";
-			span.style.fontSize = "1.5em";
-			if (nextLevel?.color) {
-				span.style.color = nextLevel.color as string;
-			} else if (nextLevel) {
-				span.classList.add("rainbow");
+			if (nextLevel) {
+				span.style.fontFamily = "'Jersey 10', monospace";
+				span.style.fontSize = "1.5em";
+				if (nextLevel.color) {
+					span.style.color = nextLevel.color as string;
+				} else {
+					span.classList.add("rainbow");
+				}
 			}
 		}
 		td.appendChild(span);
