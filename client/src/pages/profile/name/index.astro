@@ -242,7 +242,7 @@ async function start() {
 				data: daily.map(([_, v]) => v),
 				backgroundColor: daily.map(([_, v]) => colors
 					.toSorted((a, b)=> b.min - a.min)
-					.find((c) => c.min <= v * 28)?.color ?? "#ff5555"),
+					.find((c) => c.min <= v * 30)?.color ?? "#ff5555"),
 				borderWidth: 0,
 			}]
 		},

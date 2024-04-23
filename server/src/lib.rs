@@ -26,7 +26,7 @@ use usecase::profile;
 
 use crate::usecase::{get_last_updated_at, signup};
 
-const DAYS_COUNT: i64 = 28;
+const DAYS_COUNT: i64 = 30;
 
 static RUNNING_REFRESH: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
