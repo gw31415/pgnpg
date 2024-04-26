@@ -18,6 +18,9 @@ pub enum Degree {
     /// 博士
     #[sea_orm(string_value = "doctor")]
     Doctor,
+    /// OB
+    #[sea_orm(string_value = "ob")]
+    OB,
 }
 
 impl FromStr for Degree {
@@ -29,6 +32,7 @@ impl FromStr for Degree {
             "B" => Ok(Degree::Bachelor),
             "M" => Ok(Degree::Master),
             "D" => Ok(Degree::Doctor),
+            "OB" => Ok(Degree::OB),
             _ => Err("invalid degree step".to_string()),
         }
     }
@@ -44,6 +48,7 @@ impl Display for Degree {
                 Degree::Bachelor => "B",
                 Degree::Master => "M",
                 Degree::Doctor => "D",
+                Degree::OB => "OB",
             }
         )
     }

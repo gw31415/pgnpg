@@ -37,6 +37,10 @@ impl FromStr for Grade {
             }
             source = Cow::Owned(string);
         }
+        if s.starts_with("OB - ") && s.ends_with('卒') {
+            let string = s.replace(" - ", "").replace('卒', "");
+            source = Cow::Owned(string);
+        }
 
         let degree_step = Degree::from_str(&source[0..1]).map_err(|_| "invalid degree step")?;
         let grade = source[1..]
