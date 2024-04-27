@@ -17,6 +17,17 @@ impl Display for Grade {
     }
 }
 
+fn split_alpha_numeric(s: &str) -> (&str, &str) {
+    let split_index = s
+        .chars()
+        .position(|c| c.is_ascii_digit())
+        .unwrap_or(s.len());
+
+    let alpha = &s[..split_index];
+    let numeric = &s[split_index..];
+    (alpha, numeric)
+}
+
 impl FromStr for Grade {
     type Err = String;
 
@@ -42,10 +53,9 @@ impl FromStr for Grade {
             source = Cow::Owned(string);
         }
 
-        let degree_step = Degree::from_str(&source[0..1]).map_err(|_| "invalid degree step")?;
-        let grade = source[1..]
-            .parse()
-            .map_err(|_| "invalid grade".to_string())?;
+        let (degree_step, grade) = split_alpha_numeric(&source);
+        let degree_step = Degree::from_str(degree_step).map_err(|_| "invalid degree step")?;
+        let grade = grade.parse().map_err(|_| "invalid grade".to_string())?;
         Ok(Grade {
             degree_step,
             nth: grade,
