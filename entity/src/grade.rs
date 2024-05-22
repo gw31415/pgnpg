@@ -8,12 +8,12 @@ pub struct Grade {
     /// 取得を目指している学位
     pub degree_step: Degree,
     /// 何年生か
-    pub nth: u8,
+    pub nth: u16,
 }
 
 impl Display for Grade {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}:{}", self.degree_step, self.nth)
+        write!(f, "{}{}", self.degree_step, self.nth)
     }
 }
 

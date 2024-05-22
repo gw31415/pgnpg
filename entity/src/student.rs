@@ -14,7 +14,7 @@ pub struct Model {
     /// 遂行中の学位
     pub degree_step: Degree,
     /// 学年
-    pub grade: u8,
+    pub grade: u16,
     /// 受講コース
     pub course: String,
     /// レベル
