@@ -39,6 +39,14 @@ fn json(content: impl Serialize) -> impl IntoResponse {
     )
 }
 
+struct Deferer();
+
+impl Drop for Deferer {
+    fn drop(&mut self) {
+        RUNNING_REFRESH.store(false, std::sync::atomic::Ordering::Relaxed);
+    }
+}
+
 /// Spawnされる更新処理タスク
 async fn refresh(db: &DatabaseConnection, fetch_url: &str) {
     if RUNNING_REFRESH.load(std::sync::atomic::Ordering::Relaxed) {
@@ -46,6 +54,7 @@ async fn refresh(db: &DatabaseConnection, fetch_url: &str) {
     } else {
         RUNNING_REFRESH.store(true, std::sync::atomic::Ordering::Relaxed);
     }
+    let _  = Deferer();
 
     let now = chrono::Utc::now();
 
@@ -57,7 +66,6 @@ async fn refresh(db: &DatabaseConnection, fetch_url: &str) {
     let start = if let Some(last_datetime) = get_last_updated_at(db).await.unwrap() {
         // 30分以上の間隔がない場合は中止
         if now - last_datetime < chrono::Duration::minutes(30) {
-            RUNNING_REFRESH.store(false, std::sync::atomic::Ordering::Relaxed);
             return;
         }
 
@@ -193,12 +201,12 @@ pub async fn run(
         let db = db.clone();
         || async move {
             if RUNNING_REFRESH.load(std::sync::atomic::Ordering::Relaxed) {
-                (StatusCode::TOO_MANY_REQUESTS, "Already running")
+                (StatusCode::TOO_MANY_REQUESTS, "Already running.\n")
             } else {
                 tokio::spawn(async move {
                     refresh(&db.clone(), &fetch_url.clone()).await;
                 });
-                (StatusCode::OK, "Refresh started")
+                (StatusCode::OK, "Refresh started.\n")
             }
         }
     });
